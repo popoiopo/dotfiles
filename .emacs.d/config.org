@@ -1,0 +1,997 @@
+#+STARTUP: overview
+
+* All things blog publishing
+** Some setup
+This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blogging_for_fun_and_profit.html][loomcom]].
+#+BEGIN_SRC emacs-lisp
+  (setq bc_blog/project-dir "~/github/popoiopo.github.io/") ;; Define project directory
+  (setq bc_blog/org-dir (concat bc_blog/project-dir "org/")) ;; Further define useful directory
+  (setq org-publish-timestamp-directory (concat bc_blog/project-dir "cache/")) ;; Get cache dir
+  (setq bc_blog/header-file (concat bc_blog/org-dir "pages/header.html")) ;; Set file header file
+  (setq bc_blog/footer-file (concat bc_blog/org-dir "pages/footer.html")) ;; Set footer file
+
+  (setq org-html-html5-fancy t) ;; Use HTML5 fancy
+
+#+END_SRC
+** Custom functions
+#+BEGIN_SRC emacs-lisp
+  (defun bc_blog/header (arg)
+      (with-temp-buffer
+        (insert-file-contents bc_blog/header-file)
+        (buffer-string)))
+
+  (defun bc_blog/footer (arg)
+      (with-temp-buffer
+        (insert-file-contents bc_blog/footer-file)
+        (buffer-string)))
+
+#+END_SRC
+** ox-publish
+#+BEGIN_SRC emacs-lisp
+  (require 'ox-publish)
+  (setq org-publish-project-alist
+        '(
+          ("bc-pages"
+           :base-directory "~/github/popoiopo.github.io/org/"
+           :exclude ".*drafts/.*"
+           :exclude ".*pages/.*"
+           :base-extension "org"
+           :publishing-directory "~/github/popoiopo.github.io/"
+           :recursive t
+           :publishing-function org-twbs-publish-to-html
+           :with-author t
+           :with-creator nil
+           :with-date t
+           :section-numbers nil
+           :with-title t
+           :with-toc nil
+           :with-drawers t
+           :with-sub-superscript nil
+           :html-link-home "/"
+           :html-head nil
+           :html-head-include-default-style nil
+           :html-head-include-scripts nil
+           :html-viewport nil
+           :html-link-up ""
+           :html-preamble bc_blog/header
+           :html-postamble bc_blog/footer
+           :auto-sitemap t
+           :sitemap-sort-files anti-chronologically
+           :sitemap-title "BC Blog"           
+           :headline-levels 4             ; Just the default for this project.
+           )
+          ("bc-static"
+           :base-directory "~/github/popoiopo.github.io/org/"
+           :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|svg"
+           :publishing-directory "~/github/popoiopo.github.io/"
+           :recursive t
+           :publishing-function org-publish-attachment
+           )
+          ("bc_blog" :components ("bc-pages" "bc-static"))
+          ))
+
+  ;; Custom id
+  (require 'org-id)
+  (setq org-id-link-to-org-use-id 'create-if-interactive-and-no-custom-id)
+
+  (defun eos/org-custom-id-get (&optional pom create prefix)
+    "Get the CUSTOM_ID property of the entry at point-or-marker POM.
+     If POM is nil, refer to the entry at point. If the entry does
+     not have an CUSTOM_ID, the function returns nil. However, when
+     CREATE is non nil, create a CUSTOM_ID if none is present
+     already. PREFIX will be passed through to `org-id-new'. In any
+     case, the CUSTOM_ID of the entry is returned."
+    (interactive)
+    (org-with-point-at pom
+      (let ((id (org-entry-get nil "CUSTOM_ID")))
+        (cond
+         ((and id (stringp id) (string-match "\\S-" id))
+          id)
+         (create
+          (setq id (org-id-new (concat prefix "h")))
+          (org-entry-put pom "CUSTOM_ID" id)
+          (org-id-add-location id (buffer-file-name (buffer-base-buffer)))
+          id)))))
+
+  (defun eos/org-add-ids-to-headlines-in-file ()
+    "Add CUSTOM_ID properties to all headlines in the
+     current file which do not already have one."
+    (interactive)
+    (org-map-entries (lambda () (eos/org-custom-id-get (point) 'create))))
+
+  ;; automatically add ids to captured headlines
+  (add-hook 'org-capture-prepare-finalize-hook
+            (lambda () (eos/org-custom-id-get (point) 'create)))
+#+END_SRC
+** Ox-twbs
+#+BEGIN_SRC emacs-lisp
+  (require 'ox-twbs)
+#+END_SRC
+* auto completion
+#+BEGIN_SRC emacs-lisp
+  (use-package company
+    :ensure t
+    :init
+    (add-hook 'after-init-hook 'global-company-mode))
+#+END_SRC
+
+* avy
+#+BEGIN_SRC emacs-lisp
+  (use-package avy
+    :ensure t
+    :bind
+    ("M-s" . avy-goto-char))
+#+END_SRC
+
+* Basic improvements
+** Basics
+#+BEGIN_SRC emacs-lisp
+  (setq scroll-conservatively 100)    ;; Keep from making huge jumps
+  (setq ring-bell-function 'ignore)   ;; Unable annoying sounds
+  (setq visible-bell 1)               ;; disable annoying windows sound
+  (setq inhibit-startup-message t)    ;; Hide the startup message
+  (global-set-key (kbd "<f5>") 'revert-buffer)
+  (setq-default display-line-numbers 'relative)
+  (global-auto-revert-mode t)
+  (delete-selection-mode 1)
+  (use-package try
+    :ensure t)
+  (use-package page-break-lines
+    :ensure t
+    :init
+    (turn-on-page-break-lines-mode))
+  (setq electric-pair-pairs '(
+                              (?\( . ?\))
+                              (?\[ . ?\])
+                              (?\" . ?\")
+                              (?\{ . ?\})
+                              ))
+  (electric-pair-mode t)
+
+  (tool-bar-mode -1)                  ;; Get rid of tool-bar
+  (menu-bar-mode -1)                  ;; Git rid of menu
+  (scroll-bar-mode -1)                ;; Get rid of scroll-bar
+
+  (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
+
+  (when window-system (global-hl-line-mode t))            ;; Get a current line shadow in IDE
+
+  (use-package beacon
+    :ensure t
+    :init
+    (beacon-mode 1))                  ;; Enable small light to show where current frame is
+
+  (use-package which-key
+    :ensure t
+    :init
+    (which-key-mode))                 ;; Upon C-x get a list of possible options
+
+  (setq save-interprogram-paste-before-kill t) ;; perpetuates system clipboard
+  #+END_SRC
+
+** subword
+#+BEGIN_SRC emacs-lisp
+(global-subword-mode 1)
+#+END_SRC
+
+** clock
+Hier wordt de klok geinitieerd
+#+BEGIN_SRC emacs-lisp
+  (setq display-time-24hr-format t)
+  (display-time-mode 1)
+#+END_SRC
+
+** popup kill-ring
+#+BEGIN_SRC emacs-lisp
+  (use-package popup-kill-ring
+    :ensure t
+    :bind ("M-y" . popup-kill-ring))
+#+END_SRC
+
+* Buffer-move
+#+BEGIN_SRC emacs-lisp
+(use-package buffer-move
+  :ensure t)
+#+END_SRC
+
+* Buffers
+
+** enable ibuffer
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x b") 'ibuffer)
+#+END_SRC
+
+** expert
+#+BEGIN_SRC emacs-lisp
+  (setq ibuffer-expert t)
+#+END_SRC
+
+** allways kill current buffer
+#+BEGIN_SRC emacs-lisp
+  (defun kill-curr-buffer ()
+    (interactive)
+    (kill-buffer (current-buffer)))
+  (global-set-key (kbd "C-x k") 'kill-curr-buffer)
+#+END_SRC
+
+** kill all buffers
+#+BEGIN_SRC emacs-lisp
+  (defun kill-all-buffers ()
+    (interactive)
+    (mapc 'kill-buffer (buffer-list)))
+  (global-set-key (kbd "C-M-s-k") 'kill-all-buffers)
+#+END_SRC
+
+* config edit/reload
+
+** edit
+#+BEGIN_SRC emacs-lisp
+  (defun config-visit ()
+    (interactive)
+    (find-file "~/.emacs.d/config.org"))
+  (global-set-key (kbd "C-c e") 'config-visit)
+#+END_SRC
+
+** reload
+#+BEGIN_SRC emacs-lisp
+  (defun config-reload ()
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
+  (global-set-key (kbd "C-c r") 'config-reload)
+#+END_SRC
+
+* Convenient function
+
+** kill-whole-word
+#+BEGIN_SRC emacs-lisp
+  (defun kill-whole-word ()
+    (interactive)
+    (backward-word)
+    (kill-word 1))
+  (global-set-key (kbd "C-c w w") 'kill-whole-word)
+#+END_SRC
+
+** copy-whole-line
+#+BEGIN_SRC emacs-lisp
+  (defun copy-whole-line ()
+    (interactive)
+    (save-excursion
+      (kill-new
+       (buffer-substring
+	(point-at-bol)
+	(point-at-eol)))))
+  (global-set-key (kbd "C-c w l") 'copy-whole-line)
+#+END_SRC
+
+* Dashboard
+#+BEGIN_SRC emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+      (dashboard-setup-startup-hook)
+      (setq dashboard-startup-banner "~/.emacs.d/img/dashLogo.png")
+      (setq dashboard-items '((recents  . 10)
+                              (agenda . 10)))
+      (setq dashboard-banner-logo-title (concat "Een hele goede dag! Veel plezier met emacs he, ja toch, ja toch niet dan"))
+      (setq dashboard-footer "Niet vergeten he! C-x C-s"))
+
+  (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+  (setq dashboard-set-navigator t)
+  (setq show-week-agenda-p t)
+#+END_SRC
+
+* dmenu
+#+BEGIN_SRC emacs-lisp
+  (use-package dmenu
+    :ensure t
+    :bind
+    ("s-SPC" . 'dmenu))
+#+END_SRC
+
+* DOT
+#+BEGIN_SRC emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((dot . t))) ; this line activates dot
+#+END_SRC
+* ESS
+#+BEGIN_SRC emacs-lisp
+  ;ess-mode configuration
+  (setq ess-ask-for-ess-directory nil) 
+  (setq inferior-R-program-name "/usr/local/bin/R") 
+  (setq ess-local-process-name "R") 
+  (setq ansi-color-for-comint-mode 'filter) 
+  (setq comint-scroll-to-bottom-on-input t) 
+  (setq comint-scroll-to-bottom-on-output t) 
+  (setq comint-move-point-for-output t)
+  (setq ess-eval-visibly-p nil)
+  (require 'ess-site)
+#+END_SRC
+* Eyebrowse
+#+BEGIN_SRC emacs-lisp
+  (use-package eyebrowse
+    :ensure t)
+  (eyebrowse-mode t)
+#+END_SRC
+
+* Flycheck
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package flycheck
+  ;;   :ensure t
+  ;;   :init
+  ;;   (global-flycheck-mode t))
+#+END_SRC
+* Google Calendar
+#+BEGIN_SRC emacs-lisp
+  (setq package-check-signature nil)
+
+  (setq org-agenda-files (list
+                          "~/Dropbox/orgfiles/gcal.org"
+                          "~/Dropbox/orgfiles/index.org"
+                          )
+        )
+
+    (use-package org-gcal
+    :ensure t
+    :config
+    (setq org-gcal-client-id "757608569277-8j20sprhvedgstq3nvd0kfcfijo265sp.apps.googleusercontent.com"
+    org-gcal-client-secret "VDOB5B2H8rIdLjVu70Ft87LY"
+    org-gcal-file-alist '(("bastiaan.chatel@gmail.com" .  "~/Dropbox/orgfiles/gcal.org"))))
+
+    (add-hook 'org-agenda-mode-hook (lambda () (org-gcal-sync) ))
+    (add-hook 'org-capture-after-finalize-hook (lambda () (org-gcal-sync) ))
+
+    (global-set-key "\C-ca" 'org-agenda)
+    (setq org-agenda-start-on-weekday nil)
+    (setq org-agenda-custom-commands
+          '(("c" "Simple agenda view"
+             ((agenda "")
+              (alltodo "")))))
+#+END_SRC
+
+* Google-this
+#+BEGIN_SRC emacs-lisp
+(google-this-mode 1)
+#+END_SRC
+
+* Hungry-delete
+#+BEGIN_SRC emacs-lisp
+  (use-package hungry-delete
+    :ensure t
+    :config (global-hungry-delete-mode))
+#+END_SRC
+
+* Hydra
+
+#+BEGIN_SRC emacs-lisp
+
+#+END_SRC 
+
+* IDO
+
+** enable ido mode
+
+#+BEGIN_SRC emacs-lisp
+(setq ido-enable-flex-matching nil)
+(setq ido-create-new-buffer 'always)
+(setq ido-everywhere t)
+(ido-mode 1)
+#+END_SRC
+
+** ido-vertical
+#+BEGIN_SRC emacs-lisp
+  (use-package ido-vertical-mode
+    :ensure t
+    :init
+    (ido-vertical-mode 1))
+  (setq ido-vertical-define-keys 'C-n-and-C-p-only)
+#+END_SRC
+
+** smex
+mx ido emulator
+#+BEGIN_SRC emacs-lisp
+  (use-package smex
+    :ensure t
+    :init (smex-initialize)
+    :bind
+    ("M-x" . smex))
+#+END_SRC
+
+** switch buffers
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
+#+END_SRC
+
+* Latex Setup
+#+BEGIN_SRC emacs-lisp
+  (setenv "PATH" "/usr/local/bin:/Library/TeX/texbin/:$PATH" t)
+  (require 'ox-latex)
+  (unless (boundp 'org-latex-classes)
+    (setq org-latex-classes nil))
+  (add-to-list 'org-latex-classes
+               '("article"
+                 "\\documentclass{article}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+  )
+  (add-to-list 'org-latex-classes
+               '("book"
+                 "\\documentclass{book}"
+                 ("\\part{%s}" . "\\part*{%s}")
+                 ("\\chapter{%s}" . "\\chapter*{%s}")
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
+  )
+  (add-to-list 'org-latex-classes
+               '("koma-article"
+                 "\\documentclass{scrartcl}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))
+  )
+  (add-to-list 'org-latex-classes
+               '("assignment"
+                 "\\documentclass[11pt,a4paper]{article}
+                 \\usepackage[utf8]{inputenc}
+                 \\usepackage[T1]{fontenc}
+                 \\usepackage{fixltx2e}
+                 \\usepackage{graphicx}
+                 \\usepackage{longtable}
+                 \\usepackage{float}
+                 \\usepackage{wrapfig}
+                 \\usepackage{rotating}
+                 \\usepackage[normalem]{ulem}
+                 \\usepackage{amsmath}
+                 \\usepackage{textcomp}
+                 \\usepackage{marvosym}
+                 \\usepackage{wasysym}
+                 \\usepackage{amssymb}
+                 \\usepackage{hyperref}
+                 \\usepackage{mathpazo}
+                 \\usepackage{color}
+                 \\usepackage{enumerate}
+                 \\definecolor{bg}{rgb}{0.95,0.95,0.95}
+                 \\tolerance=1000
+                       [NO-DEFAULT-PACKAGES]
+                       [PACKAGES]
+                       [EXTRA]
+                 \\linespread{1.1}
+                 \\hypersetup{pdfborder=0 0 0}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}"))
+  )
+#+END_SRC
+* Link to org section
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c C-l") 'org-insert-link)
+#+END_SRC
+
+* Mac-specific
+#+BEGIN_SRC emacs-lisp
+  (setq mac-option-key-is-meta t
+        mac-comand-modifier 'super
+  )
+#+END_SRC
+* Magit
+#+BEGIN_SRC emacs-lisp
+  (require 'magit)
+  (global-set-key (kbd "C-x g") 'magit-status)
+#+END_SRC
+* mark-multiple
+#+BEGIN_SRC emacs-lisp
+  (use-package mark-multiple
+    :ensure t
+    :bind ("C-c q" . 'mark-next-like-this))
+
+  (use-package expand-region
+    :ensure t
+    :bind ("C-q" . er/expand-region))
+#+END_SRC
+
+* modeline
+
+** spaceline
+#+BEGIN_SRC emacs-lisp
+  (use-package spaceline
+    :ensure t
+    :config
+    (require 'spaceline-config)
+    (setq powerline-default-separator (quote arrow))
+    (spaceline-spacemacs-theme))
+#+END_SRC
+
+** diminish
+#+BEGIN_SRC emacs-lisp
+    (use-package diminish
+      :ensure t
+      :init
+      (diminish 'hungry-delete-mode)
+      (diminish 'beacon-mode)
+      (diminish 'which-key-mode)
+      (diminish 'subword-mode)
+      (diminish 'rainbow-mode)
+      (diminish 'google-this-mode)
+      (diminish 'visual-line-mode)
+      (diminish 'org-indent-mode))
+#+END_SRC
+
+* Multiple Cursors
+#+BEGIN_SRC emacs-lisp
+  (require 'multiple-cursors)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-:") 'mc/skip-to-previous-like-this)
+
+  (global-set-key (kbd "C-.") 'mc/unmark-next-like-this)
+  (global-set-key (kbd "C-,") 'mc/unmark-previous-like-this)
+  (global-set-key (kbd "C-;") 'mc/skip-to-next-like-this)
+
+  (global-set-key (kbd "C-M-,") 'mc/mark-all-like-this)
+
+  (global-set-key (kbd "C-M-;") 'mc/insert-numbers)
+  (global-set-key (kbd "C-M-:") 'mc/insert-letters)
+  (global-set-key (kbd "C-M-<") 'mc/sort-regions)
+  (global-set-key (kbd "C-M->") 'mc/reverse-regions)
+
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
+
+#+END_SRC
+
+* Narrowing
+#+BEGIN_SRC emacs-lisp
+  (defun narrow-or-widen-dwim (p)
+    "Widen if buffer is narrowed, narrow-dwim otherwise.
+  Dwim means: region, org-src-block, org-subtree, or
+  defun, whichever applies first. Narrowing to
+  org-src-block actually calls `org-edit-src-code'.
+
+  With prefix P, don't widen, just narrow even if buffer
+  is already narrowed."
+    (interactive "P")
+    (declare (interactive-only))
+    (cond ((and (buffer-narrowed-p) (not p)) (widen))
+          ((region-active-p)
+           (narrow-to-region (region-beginning)
+                             (region-end)))
+          ((derived-mode-p 'org-mode)
+           ;; `org-edit-src-code' is not a real narrowing
+           ;; command. Remove this first conditional if
+           ;; you don't want it.
+           (cond ((ignore-errors (org-edit-src-code) t)
+                  (delete-other-windows))
+                 ((ignore-errors (org-narrow-to-block) t))
+                 (t (org-narrow-to-subtree))))
+          ((derived-mode-p 'latex-mode)
+           (LaTeX-narrow-to-environment))
+          (t (narrow-to-defun))))
+
+  (define-key ctl-x-map "n" #'narrow-or-widen-dwim)
+#+END_SRC
+
+* New EWW buffer
+
+#+BEGIN_SRC emacs-lisp
+;; Auto-rename new eww buffers
+(defun xah-rename-eww-hook ()
+  "Rename eww browser's buffer so sites open in new page."
+  (rename-buffer "eww" t))
+(add-hook 'eww-mode-hook #'xah-rename-eww-hook)
+#+END_SRC
+
+* Org
+
+** Org-bullets
+#+BEGIN_SRC emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
+#+END_SRC
+
+** Async codeblocks
+#+BEGIN_SRC emacs-lisp
+  (use-package ob-async
+    :ensure t)
+#+END_SRC
+
+** basic-config
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook '(lambda () (visual-line-mode 1)))
+  (setq org-src-window-setup 'current-window)
+  (add-to-list 'org-structure-template-alist
+               '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"))
+  (add-to-list 'org-structure-template-alist
+               '("py" "#+BEGIN_SRC python?\n#+END_SRC"))
+  (add-to-list 'org-structure-template-alist
+               '("r" "#+BEGIN_SRC R :session :results output\n?\n#+END_SRC"))
+  (add-to-list 'org-structure-template-alist
+               '("rt" "#+BEGIN_SRC R :session :results output :colnames yes :rownames yes\n?\n#+END_SRC"))
+  (add-to-list 'org-structure-template-alist
+               '("rf" "#+BEGIN_SRC R :session :file ?.png :results output graphics :exports both\n?\n#+END_SRC"))
+
+   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+   (add-hook 'org-mode-hook 'org-display-inline-images)  
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)))
+
+  ;; (add-hook 'after-init-hook (lambda() (dolist (face '(hl-line))
+  ;;   (set-face-attribute face nil :extend nil))))
+  ;; (add-hook 'after-init-hook (lambda() (dolist (face '(org-block org-block-begin-line org-block-end-line))
+  ;;   (set-face-attribute face nil :extend nil :background nil))))
+#+END_SRC
+
+** org-indent
+#+BEGIN_SRC emacs-lisp
+(add-hook 'org-mode-hook 'org-indent-mode)
+#+END_SRC
+
+** Youtube exports
+#+BEGIN_SRC emacs-lisp
+  (defvar yt-iframe-format
+    ;; You may want to change your width and height.
+    (concat "<iframe width=\"440\""
+            " height=\"335\""
+            " src=\"https://www.youtube.com/embed/%s\""
+            " frameborder=\"0\""
+            " allowfullscreen>%s</iframe>"))
+
+  (org-add-link-type
+   "yt"
+   (lambda (handle)
+     (browse-url
+      (concat "https://www.youtube.com/embed/"
+              handle)))
+   (lambda (path desc backend)
+     (cl-case backend
+       (html (format yt-iframe-format
+                     path (or desc "")))
+       (latex (format "\href{%s}{%s}"
+                      path (or desc "video"))))))
+#+END_SRC
+
+* Org Capture
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c c")
+                  'org-capture)
+
+  (setq org-capture-templates
+        '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+           "* %?\n:PROPERTIES:\n:calendar-id: bastiaan.chatel@gmail.com\n:LOCATION:\n:END:\n:org-gcal:\n%^T\nNOTES:\n:END:\n")
+          ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/index.org" "Notes")
+           "* %?\n%u" :prepend t)
+          ("m" "Meeting Notes and Questions" entry (file+headline "~/Dropbox/orgfiles/index.org" "Meeting Notes and Questions")
+           "* %? %u\n" :prepend t)
+          ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/index.org" "Links")
+           "* %? %^L %^g \n%T" :prepend t)
+          ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/index.org" "To Do Items")
+           "* TODO [#%?] \n:PROPERTIES:\nTIME_STAMP: %u\nSCHEDULED: \n:END:\n:NOTES:\n\n\n:END:\n" :prepend t)))
+#+END_SRC
+
+* Org-pomodoro
+#+BEGIN_SRC emacs-lisp
+(use-package org-pomodoro
+  :ensure t
+  :commands (org-pomodoro)
+  :config
+  (setq alert-user-configuration (quote ((((:category . "org-pomodoro")) libnotify nil)))))
+
+(setq org-pomodoro-length 25)
+(setq org-pomodoro-short-break-length 5)
+(setq org-pomodoro-long-break-length 15)
+(setq org-pomodoro-play-sounds 1)
+(setq org-pomodoro-ask-upon-killing 1)
+#+END_SRC
+
+* Org-ref
+#+BEGIN_SRC emacs-lisp
+  (require 'org-ref)
+
+  (setq reftex-default-bibliography '("~/Dropbox/bibliography/references.bib"))
+
+  ;; see org-ref for use of these variables
+  (setq org-ref-bibliography-notes "~/Dropbox/bibliography/notes.org"
+        org-ref-default-bibliography "~/Dropbox/bibliography/references.bib"
+        org-ref-pdf-directory "~/Dropbox/bibliography/bibtex-pdfs/")
+
+  (setq bibtex-completion-bibliography "~/Dropbox/bibliography/references.bib"
+        bibtex-completion-library-path "~/Dropbox/bibliography/bibtex-pdfs"
+        bibtex-completion-notes-path "~/Dropbox/bibliography/helm-bibtex-notes")
+
+  ;; open pdf with system pdf viewer (works on mac)
+  (setq bibtex-completion-pdf-open-function
+    (lambda (fpath)
+      (start-process "open" "*open*" "open" fpath)))
+
+  (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
+  (setq org-latex-prefer-user-labels t)
+#+END_SRC
+
+* pdf-tools
+#+BEGIN_SRC emacs-lisp
+  (use-package pdf-tools
+   :pin manual ;; manually update
+   :config
+   ;; initialise
+   (pdf-tools-install)
+   ;; open pdfs scaled to fit page
+   (setq-default pdf-view-display-size 'fit-page)
+   ;; automatically annotate highlights
+   (setq pdf-annot-activate-created-annotations t)
+   ;; use normal isearch
+   (define-key pdf-view-mode-map (kbd "C-s") 'isearch-forward)
+   (bind-keys :map pdf-view-mode-map
+   ("\\" . hydra-pdftools/body)
+   ("h"  . pdf-annot-add-highlight-markup-annotation)
+   ("t"  . pdf-annot-add-text-annotation)
+   ("d"  . pdf-annot-delete)))
+
+#+END_SRC
+* Personal Keymaps
+#+BEGIN_SRC emacs-lisp
+  (defun org-agenda-show-agenda-and-todo (&optional arg)
+    (interactive "P")
+    (org-agenda arg "c")
+    (org-agenda-fortnight-view))
+
+  ;; set up my own map for files, folder and windows
+  (define-prefix-command 'z-map)
+  (global-set-key (kbd "C-z") 'z-map)
+  (define-key z-map (kbd "a") 'org-agenda-show-agenda-and-todo)
+  (define-key z-map (kbd "n") 'narrow-or-widen-dwim)
+  (define-key z-map (kbd "u") (defun zshrcEdit () (interactive) (find-file "~/.zshrc")))
+  (define-key z-map (kbd "i") (defun indexEdit() (interactive) (find-file "~/Dropbox/orgfiles/index.org")))
+  (define-key z-map (kbd "o") (defun skhdEdit() (interactive) (find-file "~/.skhdrc")))
+  (define-key z-map (kbd "p") (defun yabaiEdit() (interactive) (find-file "~/.yabairc")))
+  (define-key z-map (kbd "j") (defun bibtexEdit() (interactive) (find-file "~/Dropbox/bibliography/references.bib")))
+  (define-key z-map (kbd "k") (defun bibNotesEdit() (interactive) (find-file "~/Dropbox/bibliography/Notes.org")))
+  (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
+  (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
+  (define-key z-map (kbd "<down>") 'shrink-window)
+  (define-key z-map (kbd "<up>") 'enlarge-window)
+  (define-key z-map (kbd "C-<up>") 'buf-move-up)
+  (define-key z-map (kbd "C-<down>") 'buf-move-down)
+  (define-key z-map (kbd "C-<left>") 'buf-move-left)
+  (define-key z-map (kbd "C-<right>") 'buf-move-right)
+
+  ;; map for 
+  (define-prefix-command 'o-map)
+  (global-set-key (kbd "C-o") 'o-map)
+  ;; org-ref maps
+  (define-key o-map (kbd "i") 'org-ref-insert-cite-with-completion)
+  (define-key o-map (kbd "l") 'org-ref-helm-insert-label-link)
+  (define-key o-map (kbd "r") 'org-ref-helm-insert-ref-link)
+  ;; google maps
+  (define-key o-map (kbd "a") 'google-this-region)
+  (define-key o-map (kbd "s") 'google-this)
+  (define-key o-map (kbd "d") 'google-this-line)
+  (define-key o-map (kbd "w") 'google-this-word)
+  (define-key o-map (kbd "m") 'google-this-maps)
+
+
+  (setq ns-function-modifier 'hyper)
+
+  (setq user-full-name "Bas Chatel" user-mail-address "bastiaan.chatel@gmail.com")
+#+END_SRC
+* Projectile
+#+BEGIN_SRC emacs-lisp
+  ;; (use-package projectile
+  ;; :ensure t
+  ;; :diminish
+  ;; :config
+  ;; (projectile-global-mode)
+  ;; (setq projectile-completion-system 'ivy))
+
+  ;; (use-package counsel-projectile
+  ;; :ensure t
+  ;; :config
+  ;; (counsel-projectile-on))
+
+  (use-package dumb-jump
+    :bind (("M-g o" . dumb-jump-go-other-window)
+           ("M-g j" . dumb-jump-go)
+           ("M-g x" . dumb-jump-go-prefer-external)
+           ("M-g z" . dumb-jump-go-prefer-external-other-window))
+    :config (setq dumb-jump-selector 'ivy)
+    :ensure)
+#+END_SRC
+* Python
+
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "company"
+    '(add-to-list 'company-backends 'company-anaconda))
+  (add-hook 'python-mode-hook 'anaconda-mode)
+  (add-hook 'python-mode-hook (lambda ()
+                                (require 'sphinx-doc)
+                                (sphinx-doc-mode t)))
+#+END_SRC
+* rainbow
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-mode
+    :ensure t
+    :init (add-hook 'prog-mode-hook 'rainbow-mode))
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :init
+    (rainbow-delimiters-mode 1))
+#+END_SRC
+
+* Reveal.js
+#+BEGIN_SRC emacs-lisp
+(use-package ox-reveal
+:ensure ox-reveal)
+
+(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+(setq org-reveal-mathjax t)
+
+(use-package htmlize
+:ensure t)
+#+END_SRC
+
+* Spotify
+#+BEGIN_SRC emacs-lisp
+
+#+END_SRC
+
+* swiper/counsel/ivy
+#+BEGIN_SRC emacs-lisp
+  ;; it looks like counsel is a requirement for swiper
+  (use-package counsel
+  :ensure t
+  )
+
+  (use-package counsel
+    :bind (("M-y" . counsel-yank-pop)
+           :map ivy-minibuffer-map
+           ("M-y" . ivy-next-line)))
+
+  (use-package swiper
+  :ensure try
+  :config
+  (progn
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "<f6>") 'ivy-resume)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> l") 'counsel-load-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+  (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+  ))
+#+END_SRC
+
+* Switch to previous buffer
+#+BEGIN_SRC emacs-lisp
+  (defun er-switch-to-previous-buffer ()
+    "Switch to previously open buffer.
+  Repeated invocations toggle between the two most recently open buffers."
+    (interactive)
+    (switch-to-buffer (other-buffer (current-buffer))))
+
+  (global-set-key (kbd "C-c b") #'er-switch-to-previous-buffer)
+#+END_SRC
+
+* switchwindow
+#+BEGIN_SRC emacs-lisp
+  (use-package switch-window
+    :ensure t
+    :config
+    (setq switch-window-input-style 'minibuffer)
+    (setq switch-window-increase 4)
+    (setq switch-window-threshold 2)
+    (setq switch-window-shortcut-style 'qwerty)
+    (setq switch-window-qwerty-shortcuts
+	  '("a" "s" "d" "f" "h" "j" "k" "l"))
+    :bind
+    ([remap other-window] . switch-window))
+#+END_SRC
+
+* symon
+#+BEGIN_SRC emacs-lisp
+  (use-package symon
+    :ensure t
+    :bind
+    ("s-h" . symon-mode))
+#+END_SRC
+
+* Tags
+#+BEGIN_SRC emacs-lisp
+ (setq org-tag-alist '(("@work" . ?w) ("@home" . ?h) ("@loneliness" . ?l) ("@gaming" . ?g) ("@complexity" . ?c) ))
+#+END_SRC
+
+* Toggle fullscreen buffer
+#+BEGIN_SRC emacs-lisp
+  (defun toggle-maximize-buffer () "Maximize buffer"
+    (interactive)
+    (if (= 1 (length (window-list)))
+        (jump-to-register '_) 
+      (progn
+        (window-configuration-to-register '_)
+        (delete-other-windows))))
+  (global-set-key (kbd "C-M-f") 'toggle-maximize-buffer)
+#+END_SRC
+
+* Web mode / emmet
+#+BEGIN_SRC emacs-lisp
+  (use-package web-mode
+  :ensure t
+  :config
+  (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+  (setq web-mode-engines-alist
+  '(("django"    . "\\.html\\'")))
+  (setq web-mode-ac-sources-alist
+  '(("css" . (ac-source-css-property))
+  ("html" . (ac-source-words-in-buffer ac-source-abbrev))))
+
+  (setq web-mode-enable-auto-closing t)
+  (setq web-mode-enable-auto-quoting t)) ; this fixes the quote problem I mentioned
+
+  (use-package emmet-mode
+  :ensure t
+  :config
+  (add-hook 'sgml-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'web-mode-hook 'emmet-mode) ;; Auto-start on any markup modes
+  (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
+  )
+#+END_SRC
+
+* window splitting function
+#+BEGIN_SRC emacs-lisp
+  (defun split-and-follow-horizontally ()
+    (interactive)
+    (split-window-below)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+
+  (defun split-and-follow-vertically ()
+    (interactive)
+    (split-window-right)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+#+END_SRC
+
+* yassnippet
+
+** Loading yassnippet
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config (use-package yasnippet-snippets
+              :ensure t)
+    (yas-reload-all))
+
+  (yas-global-mode 1)
+
+#+END_SRC
+
+* zoom all
+#+BEGIN_SRC emacs-lisp
+  ;; (defadvice text-scale-increase (around all-buffers (arg) activate)
+  ;;  (dolist (buffer (buffer-list))
+  ;;    (with-current-buffer buffer
+  ;;      ad-do-it))) 
+#+END_SRC
+

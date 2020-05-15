@@ -1,0 +1,37 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import scipy as sp
+import numpy as np
+import sympy
+
+def prettyfie(ax, x, y, title, legendYN="Yes"):
+
+    # Remove borders
+    ax.spines["top"].set_visible(False)
+    ax.spines["bottom"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+    ax.grid(alpha=0.25)
+
+    # Remove unnecessary ticks
+    ax.tick_params(axis="both",
+                   which="both",
+                   bottom=False,
+                   top=False,
+                   labelbottom=True,
+                   left=False,
+                   right=False,
+                   labelleft=True)
+
+    if legendYN == "Yes":
+        # Create legend and grid
+        ax.legend(framealpha=1, shadow=True)
+        ax.legend()
+
+    # Set labels and title
+    ax.set_xlabel(x, fontsize=14)
+    ax.set_ylabel(y, fontsize=14)
+    ax.set_title(title, fontsize=14)
+    ax.tick_params(axis='both', which='major', labelsize=12)
+
+$0

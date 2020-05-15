@@ -1,0 +1,85 @@
+#!/usr/bin/env sh
+
+# bar settings
+yabai -m config status_bar                   off
+yabai -m config status_bar_text_font         "Helvetica Neue:Bold:12.0"
+yabai -m config status_bar_icon_font         "FontAwesome:Regular:12.0"
+yabai -m config status_bar_background_color  0xff202020
+yabai -m config status_bar_foreground_color  0xffa8a8a8
+yabai -m config status_bar_space_icon_strip            
+yabai -m config status_bar_space_icon        
+yabai -m config status_bar_clock_icon        
+
+function update_battery_loop() {
+        # seconds to wait betwwen each refresh
+        frequency=300
+	
+        while true; do
+		# Get the current battery percentage.
+		battery=$(pmset -g batt | grep -Eo "\d+%" | cut -d% -f1)
+
+		if [ $battery -gt 84 ]; then
+			yabai -m config status_bar_power_icon_strip  
+		elif [ $battery -gt 60 ]; then
+			yabai -m config status_bar_power_icon_strip  
+		elif [ $battery -gt 39 ]; then
+			yabai -m config status_bar_power_icon_strip  
+		elif [ $battery -gt 14 ]; then
+			yabai -m config status_bar_power_icon_strip  
+		else
+			yabai -m config status_bar_power_icon_strip  
+		fi
+
+		# wait 5 minutes
+		sleep $frequency
+	done
+}
+
+# run the function async
+update_battery_loop &
+
+# global settings
+yabai -m config focus_follows_mouse          autoraise
+yabai -m config window_placement             second_child
+yabai -m config window_topmost               off
+yabai -m config window_opacity               off
+yabai -m config window_shadow                on
+yabai -m config window_border                on
+yabai -m config window_border_width          4
+yabai -m config active_window_border_color   0x00775759
+yabai -m config normal_window_border_color   0x00505050
+yabai -m config insert_window_border_color   0xffd75f5f
+yabai -m config split_ratio                  0.50
+yabai -m config auto_balance                 off
+yabai -m config mouse_modifier               fn
+yabai -m config mouse_action1                move
+yabai -m config mouse_action2                resize
+
+# opacity
+yabai -m config window_opacity off
+# yabai -m config active_window_opacity 1.0
+# yabai -m config normal_window_opacity 0.8
+
+# general space settings
+yabai -m config layout                       bsp
+yabai -m config top_padding                  30 
+yabai -m config bottom_padding               10
+yabai -m config left_padding                 10
+yabai -m config right_padding                10
+yabai -m config window_gap                   10
+
+# make sure emacs is tiled
+yabai -m rule --add app=Emacs manage=on
+yabai -m rule --add app=Spotify manage=on
+
+# Refresh ubersicht for single monitor
+yabai -m signal --add event=space_changed \
+    action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"nibar-spaces-primary-jsx\"'"
+
+# # Refresh ubersicht for multimonitor
+yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"nibar-spaces-primary-jsx\"'"
+yabai -m signal --add event=display_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"nibar-spaces-primary-jsx\"'"
+yabai -m signal --add event=space_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"nibar-spaces-secondary-jsx\"'"
+yabai -m signal --add event=display_changed action="osascript -e 'tell application id \"tracesOf.Uebersicht\" to refresh widget id \"nibar-spaces-secondary-jsx\"'"
+
+echo "yabai configuration loaded.."
