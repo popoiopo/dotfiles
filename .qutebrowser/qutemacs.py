@@ -19,6 +19,78 @@ c.input.insert_mode.auto_enter = False
 c.input.insert_mode.auto_leave = False
 c.input.insert_mode.plugins = False
 
+# Get rid of the status bar 
+c.statusbar.hide = True
+
+## Format to use for the tab title. The following placeholders are
+## defined:  * `{perc}`: Percentage as a string like `[10%]`. *
+## `{perc_raw}`: Raw percentage, e.g. `10`. * `{current_title}`: Title of
+## the current web page. * `{title_sep}`: The string ` - ` if a title is
+## set, empty otherwise. * `{index}`: Index of this tab. * `{id}`:
+## Internal tab ID of this tab. * `{scroll_pos}`: Page scroll position. *
+## `{host}`: Host of the current web page. * `{backend}`: Either
+## ''webkit'' or ''webengine'' * `{private}`: Indicates when private mode
+## is enabled. * `{current_url}`: URL of the current web page. *
+## `{protocol}`: Protocol (http/https/...) of the current web page. *
+## `{audio}`: Indicator for audio/mute status.
+## Type: FormatString
+c.tabs.title.format = '{index} | {scroll_pos} | {audio}: {current_title}'
+c.window.title_format = '{perc} {scroll_pos}{title_sep}{current_title}{private}'
+
+## When to show the tab bar.
+## Type: String
+## Valid values:
+##   - always: Always show the tab bar.
+##   - never: Always hide the tab bar.
+##   - multiple: Hide the tab bar if only one tab is open.
+##   - switching: Show the tab bar when switching tabs.
+c.tabs.show = 'multiple'
+
+## Position of new tabs which are not opened from another tab. See
+## `tabs.new_position.stacking` for controlling stacking behavior.
+## Type: NewTabPosition
+## Valid values:
+##   - prev: Before the current tab.
+##   - next: After the current tab.
+##   - first: At the beginning.
+##   - last: At the end.
+c.tabs.new_position.unrelated = 'next'
+
+## Which categories to show (in which order) in the :open completion.
+## Type: FlagList
+## Valid values:
+##   - searchengines
+##   - quickmarks
+##   - bookmarks
+##   - history
+c.completion.open_categories = ['bookmarks', 'searchengines', 'quickmarks', 'history']
+
+## Number of URLs to show in the web history. 0: no history / -1:
+## unlimited
+## Type: Int
+c.completion.web_history.max_items = 35
+
+## Allow pdf.js to view PDF files in the browser. Note that the files can
+## still be downloaded by clicking the download button in the pdf.js
+## viewer.
+## Type: Bool
+c.content.pdfjs = True
+
+# Spellchecker
+# c.spellcheck.languages = ["en-US", "nl-NL"]
+
+# Set sites to function as search engines from console 
+c.url.searchengines = {
+    'DEFAULT': 'https://duckduckgo.com/?q={}',
+    're': 'https://www.reddit.com/r/{}',
+    'yt': 'https://www.youtube.com/results?search_query={}',
+    'lib': 'http://gen.lib.rus.ec/search.php?req={}',
+    'mp': 'https://www.marktplaats.nl/q/{}',
+    'th': 'https://www.thesaurus.com/browse/{}',
+    'tr': 'https://translate.google.com/#view=home&op=translate&sl=auto&tl=en&text={}',
+    'sc': 'https://scholar.google.com/scholar?hl=en&as_sdt=0%2C5&q={}'
+}
+
 # Forward unbound keys
 c.input.forward_unbound_keys = "all"
 
@@ -27,53 +99,100 @@ ESC_BIND = 'clear-keychain ;; search ;; fullscreen --leave'
 c.bindings.default['normal'] = {}
 # Bindings
 c.bindings.commands['normal'] = {
+        # Development
+        '<ctrl-x>d': 'view-source',
+
+        # Bookmarks
+        '<ctrl-c>a': 'bookmark-add',
+        '<ctrl-c>d': 'bookmark-del',
+    
 	# Navigation
 	'<ctrl-v>': 'scroll-page 0 0.5',
 	'<alt-v>': 'scroll-page 0 -0.5',
 	'<ctrl-shift-v>': 'scroll-page 0 1',
 	'<alt-shift-v>': 'scroll-page 0 -1',
-	# FIXME come up with logical bindings for scrolling left/right
+	'<ctrl-x>o': 'set-cmd-text -s :tab-focus',
+	'<ctrl-x>%': 'set-cmd-text -s :scroll-to-perc',
 
 	# Commands
 	'<alt-x>': 'set-cmd-text :',
-	'<ctrl-x>b': 'set-cmd-text -s :buffer',
 	'<ctrl-x><ctrl-c>': 'quit',
+	'<ctrl-/>': 'undo',
 
 	# searching
 	'<ctrl-s>': 'set-cmd-text /',
 	'<ctrl-r>': 'set-cmd-text ?',
+
+        # qute-pass
+        '<shift-alt-p>': 'set-cmd-text -s :spawn --userscript qute-lastpass --password-only',
+        '<ctrl-alt-p>': 'set-cmd-text -s :spawn --userscript qute-lastpass --username-only',
     
 	# quickmarks
 	'<ctrl-q>l': 'set-cmd-text -s :quickmark-load ',
 	'<ctrl-q>a': 'set-cmd-text -s :quickmark-add ',
+	'<ctrl-q>d': 'set-cmd-text -s :quickmark-del ',
 
+        # Copy url
+        '<ctrl-c>u': 'yank pretty-url -s',
+        '<ctrl-c>t': 'yank title -s',
+        '<ctrl-c>d': 'yank domain -s',
+        '<ctrl-c>o': 'yank inline [[{url}][{title}]] -s',
+    
 	# hinting (shows all links)
-	'<alt-s>': 'hint all',
-
+        '<alt-s>f': 'fullscreen',
+	'<alt-s>a': 'hint all',
+	'<alt-s>i': 'hint images',
+	'<alt-s><alt-i>': 'hint images download',
+	'<alt-s><ctrl-i>': 'hint images tab',
+	'<alt-s>l': 'hint links',
+	'<alt-s><alt-l>': 'hint links yank',
+	'<alt-s><ctrl-l>': 'hint links tab',
+	'<alt-s>h': 'hint all hover',
+	'<alt-s>p': 'hint inputs',
+	'<alt-s><alt-p>': 'hint inputs --first',
+	'<alt-s>w': 'hint --rapid links window',
+	'<alt-s>o': 'hint links fill :open -t -r {hint-url}',
+    
 	# history
 	# FIXME maybe this should be <C-b> <C-n>? Or would that be too confusing?
 	'<ctrl-]>': 'forward',
 	'<ctrl-[>': 'back',
+	'<ctrl-z>': 'repeat-command',
 
 	# tabs
-	'<ctrl-j>': 'tab-next',
-	'<ctrl-k>': 'tab-prev',
+        '<ctrl-x>b': 'set-cmd-text -s :buffer ',
+	'<ctrl-alt-f>': 'tab-next',
+	'<ctrl-alt-b>': 'tab-prev',
 	'<ctrl-x>1': 'tab-only',
 	'<ctrl-x>0': 'tab-close',
+        '<ctrl-x>-': 'tab-move -',
+        '<ctrl-x>+': 'tab-move +',
 	'<ctrl-x>3': 'tab-clone',
-	'<ctrl-x>o': 'tab-focus',
+        '<ctrl-x>k': 'close',
+        '<ctrl-x>r': 'reload -f',
+        '<ctrl-x>m': 'tab-mute',
+        '<ctrl-x>s': 'save',
+        '<ctrl-x><ctrl-n>': 'tab-give',
+        '<ctrl-x><ctrl-f>': 'set-cmd-text -s :open -t ',
+        '<ctrl-x><ctrl-shift-f>': 'set-cmd-text -s :open ',
+	'<alt-1>': 'tab-focus 1',
+	'<alt-2>': 'tab-focus 2',
+	'<alt-3>': 'tab-focus 3',
+	'<alt-4>': 'tab-focus 4',
+	'<alt-5>': 'tab-focus 5',
+	'<alt-6>': 'tab-focus 6',
+	'<alt-7>': 'tab-focus 7',
+	'<alt-8>': 'tab-focus 8',
+	'<alt-9>': 'tab-focus 9',
+	'<alt-0>': 'tab-focus -1',
 
         # Zoom
         '<ctrl-=>': 'zoom-in',
         '<ctrl-->': 'zoom-out',
-        '<ctrl-x>=': 'zoom',
+        '<ctrl-alt-=>': 'zoom',
       
-        # Zoom
+        # Reload config
         '<ctrl-c>r': 'config-source',
-
-	# open links
-	'<ctrl-l>': 'set-cmd-text -s :open',
-	'<alt-l>': 'set-cmd-text -s :open -t',
 
 	# editing
 	'<ctrl-f>': 'fake-key <Right>',
@@ -82,6 +201,7 @@ c.bindings.commands['normal'] = {
 	'<ctrl-e>': 'fake-key <End>',
 	'<ctrl-n>': 'fake-key <Down>',
 	'<ctrl-p>': 'fake-key <Up>',
+	'<ctrl-k>': 'rl-kill-line',
 	'<alt-f>': 'fake-key <Ctrl-Right>',
 	'<alt-b>': 'fake-key <Ctrl-Left>',
 	'<ctrl-d>': 'fake-key <Delete>',

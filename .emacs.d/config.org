@@ -123,6 +123,35 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
     ("M-s" . avy-goto-char))
 #+END_SRC
 
+* Backup files
+#+BEGIN_SRC emacs-lisp
+  (setq version-control t     ;; Use version numbers for backups.
+        kept-new-versions 10  ;; Number of newest versions to keep.
+        kept-old-versions 0   ;; Number of oldest versions to keep.
+        delete-old-versions t ;; Don't ask to delete excess backup versions.
+        backup-by-copying t)  ;; Copy all files, don't rename them.
+
+  (setq vc-make-backup-files t)
+
+  ;; Default and per-save backups go here:
+  (setq backup-directory-alist '(("" . "~/.emacs.d/backup/per-save")))
+
+  (defun force-backup-of-buffer ()
+    ;; Make a special "per session" backup at the first save of each
+    ;; emacs session.
+    (when (not buffer-backed-up)
+      ;; Override the default parameters for per-session backups.
+      (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
+            (kept-new-versions 3))
+        (backup-buffer)))
+    ;; Make a "per save" backup on each save.  The first save results in
+    ;; both a per-session and a per-save backup, to keep the numbering
+    ;; of per-save backups consistent.
+    (let ((buffer-backed-up nil))
+      (backup-buffer)))
+
+  (add-hook 'before-save-hook  'force-backup-of-buffer)
+#+END_SRC
 * Basic improvements
 ** Basics
 #+BEGIN_SRC emacs-lisp
@@ -307,6 +336,28 @@ Hier wordt de klok geinitieerd
   (setq ess-eval-visibly-p nil)
   (require 'ess-site)
 #+END_SRC
+* Export to word
+#+BEGIN_SRC emacs-lisp
+  ;; This setup is tested on Emacs 24.3 & Emacs 24.4 on Linux/OSX
+  ;; org v7 bundled with Emacs 24.3
+  (setq org-export-odt-preferred-output-format "doc")
+  ;; org v8 bundled with Emacs 24.4
+  (setq org-odt-preferred-output-format "doc")
+  ;; BTW, you can assign "pdf" in above variables if you prefer PDF format
+
+  ;; Only OSX need below setup
+  (defun my-setup-odt-org-convert-process ()
+    (interactive)
+    (let ((cmd "/Applications/LibreOffice.app/Contents/MacOS/soffice"))
+      (when (and (eq system-type 'darwin) (file-exists-p cmd))
+        ;; org v7
+        (setq org-export-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")))
+        ;; org v8
+        (setq org-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
+      ))
+  (my-setup-odt-org-convert-process)
+#+END_SRC
+
 * Eyebrowse
 #+BEGIN_SRC emacs-lisp
   (use-package eyebrowse
@@ -404,6 +455,7 @@ mx ido emulator
 
 * Latex Setup
 #+BEGIN_SRC emacs-lisp
+  (setq org-latex-prefer-user-labels t)
   (setenv "PATH" "/usr/local/bin:/Library/TeX/texbin/:$PATH" t)
   (require 'ox-latex)
   (unless (boundp 'org-latex-classes)
@@ -608,16 +660,6 @@ mx ido emulator
 #+BEGIN_SRC emacs-lisp
   (add-hook 'org-mode-hook '(lambda () (visual-line-mode 1)))
   (setq org-src-window-setup 'current-window)
-  (add-to-list 'org-structure-template-alist
-               '("el" "#+BEGIN_SRC emacs-lisp\n?\n#+END_SRC"))
-  (add-to-list 'org-structure-template-alist
-               '("py" "#+BEGIN_SRC python?\n#+END_SRC"))
-  (add-to-list 'org-structure-template-alist
-               '("r" "#+BEGIN_SRC R :session :results output\n?\n#+END_SRC"))
-  (add-to-list 'org-structure-template-alist
-               '("rt" "#+BEGIN_SRC R :session :results output :colnames yes :rownames yes\n?\n#+END_SRC"))
-  (add-to-list 'org-structure-template-alist
-               '("rf" "#+BEGIN_SRC R :session :file ?.png :results output graphics :exports both\n?\n#+END_SRC"))
 
    (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
    (add-hook 'org-mode-hook 'org-display-inline-images)  
@@ -839,6 +881,62 @@ mx ido emulator
 
 (use-package htmlize
 :ensure t)
+#+END_SRC
+
+* Spell checking
+#+BEGIN_SRC emacs-lisp
+  (dolist (hook '(text-mode-hook))
+    (add-hook hook (lambda () (flyspell-mode 1))))
+
+  (eval-after-load "flyspell"
+    '(progn
+       (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
+       (define-key flyspell-mouse-map [mouse-3] #'undefined)))
+
+  (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
+  (setq exec-path (append exec-path '("/usr/local/bin")))
+
+  (add-hook 'python-mode-hook
+      (lambda ()
+      (flyspell-prog-mode)
+      ))
+
+  ;; ;; use grammar checking
+  ;; (require 'langtool)
+  ;; (add-hook 'text-mode-hook
+  ;;           (lambda () 
+  ;;             (add-hook 'after-save-hook 'langtool-check nil 'make-it-local)))
+
+  ;; change language based on text
+  (use-package guess-language         ; Automatically detect language for Flyspell
+    :ensure t
+    :defer t
+    :init (add-hook 'text-mode-hook #'guess-language-mode)
+    :config
+    (setq guess-language-langcodes '((en . ("en_GB" "English"))
+                                     (nl . ("nl-NL" "Netherlands")))
+          guess-language-languages '(en nl)
+          guess-language-min-paragraph-length 45)
+    :diminish guess-language-mode)
+
+  ;; easy spell check
+  (global-set-key (kbd "<f8>") 'ispell-word)
+  (global-set-key (kbd "C-S-<f8>") 'flyspell-mode) ;(highlights misspelled words as you type)
+  (global-set-key (kbd "C-M-<f8>") 'flyspell-buffer) ;highlights all misspelled words in the buffer
+  (global-set-key (kbd "C-<f8>") 'flyspell-check-previous-highlighted-word)
+  (defun flyspell-check-next-highlighted-word ()
+    "Custom function to spell check next highlighted word"
+    (interactive)
+    (flyspell-goto-next-error)
+    (ispell-word)
+    )
+  (global-set-key (kbd "M-<f8>") 'flyspell-check-next-highlighted-word)
+
+  ;; Reevaluate buffer after a word is added to dictionary
+  (defun flyspell-buffer-after-pdict-save (&rest _)
+    (flyspell-buffer))
+
+  (advice-add 'ispell-pdict-save :after #'flyspell-buffer-after-pdict-save)
 #+END_SRC
 
 * Spotify

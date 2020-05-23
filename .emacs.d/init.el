@@ -67,7 +67,7 @@
    "c:/Users/chatel/AppData/Roaming/.emacs.d/elpa/org-pomodoro-20190530.1445/resources/focus.wav")
  '(package-selected-packages
    (quote
-    (org-noter-pdftools pdf-tools ox-twbs sphinx-doc anaconda-mode jedi-direx company-jedi auctex-latexmk org-pdfview powershell sound-wav org-pomodoro buffer-move org-noter org-plus-contrib ag dumb-jump eyebrowse all-the-icons-ivy org-gcal undo-tree google-this ob-session-async-R ob-async emmet-mode org-ref ess-smart-underscore ess epc jedi htmlize ox-reveal counsel try yasnippet-snippets pretty-mode expand-region mark-multiple swiper popup-kill-ring symon dmenu diminish spaceline dashboard rainbow-delimiters hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package material-theme better-defaults)))
+    (langtool guess-language org-noter-pdftools pdf-tools ox-twbs sphinx-doc anaconda-mode jedi-direx company-jedi auctex-latexmk org-pdfview powershell sound-wav org-pomodoro buffer-move org-noter org-plus-contrib ag dumb-jump eyebrowse all-the-icons-ivy org-gcal undo-tree google-this ob-session-async-R ob-async emmet-mode org-ref ess-smart-underscore ess epc jedi htmlize ox-reveal counsel try yasnippet-snippets pretty-mode expand-region mark-multiple swiper popup-kill-ring symon dmenu diminish spaceline dashboard rainbow-delimiters hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package material-theme better-defaults)))
  '(safe-local-variable-values (quote ((org-confirm-babel-evaluate))))
  '(send-mail-function (quote mailclient-send-it))
  '(vc-annotate-background nil)
