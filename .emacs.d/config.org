@@ -28,6 +28,7 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
 #+END_SRC
 ** ox-publish
 #+BEGIN_SRC emacs-lisp
+
   (require 'ox-publish)
   (setq org-publish-project-alist
         '(
@@ -60,6 +61,7 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
            :sitemap-title "BC Blog"           
            :headline-levels 4             ; Just the default for this project.
            )
+
           ("bc-static"
            :base-directory "~/github/popoiopo.github.io/org/"
            :base-extension "css\\|js\\|png\\|jpg\\|gif\\|pdf\\|mp3\\|ogg\\|swf\\|svg"
@@ -67,7 +69,15 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
            :recursive t
            :publishing-function org-publish-attachment
            )
-          ("bc_blog" :components ("bc-pages" "bc-static"))
+
+          ("bc-presentations"
+           :base-directory "~/github/popoiopo.github.io/Org_Presentations/"
+           :base-extension "org"
+           :publishing-directory "~/github/popoiopo.github.io/"
+           :recursive t
+           :publishing-function org-reveal-publish-to-reveal          
+           )
+          ("bc_blog" :components ("bc-pages" "bc-static" "bc-presentations"))
           ))
 
   ;; Custom id
@@ -796,6 +806,7 @@ mx ido emulator
   (define-key z-map (kbd "i") (defun indexEdit() (interactive) (find-file "~/Dropbox/orgfiles/index.org")))
   (define-key z-map (kbd "o") (defun skhdEdit() (interactive) (find-file "~/.skhdrc")))
   (define-key z-map (kbd "p") (defun yabaiEdit() (interactive) (find-file "~/.yabairc")))
+  (define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file "~/.qutebrowser/qutemacs.py")))
   (define-key z-map (kbd "j") (defun bibtexEdit() (interactive) (find-file "~/Dropbox/bibliography/references.bib")))
   (define-key z-map (kbd "k") (defun bibNotesEdit() (interactive) (find-file "~/Dropbox/bibliography/Notes.org")))
   (define-key z-map (kbd "<left>") 'shrink-window-horizontally)

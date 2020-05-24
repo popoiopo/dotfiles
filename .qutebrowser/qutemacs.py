@@ -68,7 +68,7 @@ c.completion.open_categories = ['bookmarks', 'searchengines', 'quickmarks', 'his
 ## Number of URLs to show in the web history. 0: no history / -1:
 ## unlimited
 ## Type: Int
-c.completion.web_history.max_items = 35
+c.completion.web_history.max_items = -1
 
 ## Allow pdf.js to view PDF files in the browser. Note that the files can
 ## still be downloaded by clicking the download button in the pdf.js
@@ -164,11 +164,12 @@ c.bindings.commands['normal'] = {
 	'<ctrl-alt-f>': 'tab-next',
 	'<ctrl-alt-b>': 'tab-prev',
 	'<ctrl-x>1': 'tab-only',
+	'<ctrl-x>k': 'tab-close',
 	'<ctrl-x>0': 'tab-close',
         '<ctrl-x>-': 'tab-move -',
         '<ctrl-x>+': 'tab-move +',
 	'<ctrl-x>3': 'tab-clone',
-        '<ctrl-x>k': 'close',
+        '<ctrl-x><ctrl-k>': 'close',
         '<ctrl-x>r': 'reload -f',
         '<ctrl-x>m': 'tab-mute',
         '<ctrl-x>s': 'save',
