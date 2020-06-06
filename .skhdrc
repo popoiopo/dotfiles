@@ -1,9 +1,9 @@
 # ######## YABAI ########
 # focus window
-cmd + ctrl + shift - b : yabai -m window --focus west
-cmd + ctrl + shift - n : yabai -m window --focus south
-cmd + ctrl + shift - p : yabai -m window --focus north
-cmd + ctrl + shift - f : yabai -m window --focus east
+cmd - b : yabai -m window --focus west
+cmd - n : yabai -m window --focus south
+cmd - p : yabai -m window --focus north
+cmd - f : yabai -m window --focus east
 
 # warp at window in direction of focused window
 #   (options: north, east, south, west)
@@ -19,39 +19,39 @@ cmd + ctrl - p : yabai -m window --swap north
 cmd + ctrl - f : yabai -m window --swap east
 
 # focus desktop
-cmd + ctrl - k : yabai -m space --focus recent
-cmd + ctrl - j : yabai -m space --focus prev
-cmd + ctrl - l : yabai -m space --focus next
+cmd - j : yabai -m space --focus prev
+cmd - k : yabai -m space --focus recent
+cmd - l : yabai -m space --focus next
 
 # focus virtual monitor
-cmd + ctrl - i  : yabai -m display --focus prev
-cmd + ctrl - o  : yabai -m display --focus recent
-cmd + ctrl - p  : yabai -m display --focus next
-
-# Create space on the active display
-cmd + ctrl - c : yabai -m space --create
-
-# Delete focused space and focus first space on display
-cmd + ctrl - d : yabai -m space --destroy
-
-# Flip the tree horizontally
-cmd + ctrl - x : yabai -m space --mirror x-axis
-
-# Flip the tree vertically
-cmd + ctrl - y : yabai -m space --mirror y-axis
-
-# balance size of windows
-cmd + ctrl - 0 : yabai -m space --balance
-
-# rotate tree
-cmd + ctrl - r : yabai -m space --rotate 90
-
-# change layout of desktop
-cmd + alt + shift - b : yabai -m space --layout bsp
-cmd + alt + shift - f : yabai -m space --layout float
+cmd + ctrl - j : yabai -m display --focus prev
+cmd + ctrl - k : yabai -m display --focus recent
+cmd + ctrl - l : yabai -m display --focus next
 
 # toggle window fullscreen zoom
 cmd + alt - f : yabai -m window --toggle zoom-fullscreen
+
+# Create space on the active display
+cmd + alt - c : yabai -m space --create
+
+# Delete focused space and focus first space on display
+cmd + alt - d : yabai -m space --destroy
+
+# Flip the tree horizontally
+cmd + alt - y : yabai -m space --mirror x-axis
+
+# Flip the tree vertically
+cmd + alt - x : yabai -m space --mirror y-axis
+
+# balance size of windows
+cmd + alt - 0 : yabai -m space --balance
+
+# rotate tree
+cmd + alt - r : yabai -m space --rotate 90
+
+# change layout of desktop
+cmd + alt - b : yabai -m space --layout bsp
+cmd + alt - l : yabai -m space --layout float
 
 # send window to desktop and follow focus
 cmd + alt - 1 : yabai -m window --space  1; yabai -m space --focus 1

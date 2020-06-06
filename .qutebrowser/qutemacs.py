@@ -84,6 +84,7 @@ c.url.searchengines = {
     'DEFAULT': 'https://duckduckgo.com/?q={}',
     're': 'https://www.reddit.com/r/{}',
     'yt': 'https://www.youtube.com/results?search_query={}',
+    'ma': 'https://www.google.com/maps/place/{}',
     'lib': 'http://gen.lib.rus.ec/search.php?req={}',
     'mp': 'https://www.marktplaats.nl/q/{}',
     'th': 'https://www.thesaurus.com/browse/{}',
@@ -116,7 +117,7 @@ c.bindings.commands['normal'] = {
 
 	# Commands
 	'<alt-x>': 'set-cmd-text :',
-	'<ctrl-x><ctrl-c>': 'quit',
+	'<ctrl-x><ctrl-c>': 'close',
 	'<ctrl-/>': 'undo',
 
 	# searching
@@ -169,11 +170,12 @@ c.bindings.commands['normal'] = {
         '<ctrl-x>-': 'tab-move -',
         '<ctrl-x>+': 'tab-move +',
 	'<ctrl-x>3': 'tab-clone',
-        '<ctrl-x><ctrl-k>': 'close',
         '<ctrl-x>r': 'reload -f',
         '<ctrl-x>m': 'tab-mute',
         '<ctrl-x>s': 'save',
         '<ctrl-x><ctrl-n>': 'tab-give',
+        '<ctrl-x><ctrl-t>': 'set-cmd-text -s :tab-take',
+        '<ctrl-x><ctrl-k>': 'set-cmd-text -s :tab-take --keep',
         '<ctrl-x><ctrl-f>': 'set-cmd-text -s :open -t ',
         '<ctrl-x><ctrl-shift-f>': 'set-cmd-text -s :open ',
 	'<alt-1>': 'tab-focus 1',
@@ -202,13 +204,13 @@ c.bindings.commands['normal'] = {
 	'<ctrl-e>': 'fake-key <End>',
 	'<ctrl-n>': 'fake-key <Down>',
 	'<ctrl-p>': 'fake-key <Up>',
-	'<ctrl-k>': 'rl-kill-line',
+	'<ctrl-k>': 'fake-key <Ctrl-Delete>',
 	'<alt-f>': 'fake-key <Ctrl-Right>',
 	'<alt-b>': 'fake-key <Ctrl-Left>',
 	'<ctrl-d>': 'fake-key <Delete>',
 	'<alt-d>': 'fake-key <Ctrl-Delete>',
 	'<alt-backspace>': 'fake-key <Ctrl-Backspace>',
-	'<ctrl-w>': 'fake-key <Ctrl-backspace>',
+	'<ctrl-w>': 'fake-key <Ctrl-Backspace>',
 	'<ctrl-y>': 'insert-text {primary}',
 
 	# Numbers
