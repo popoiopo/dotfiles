@@ -18,12 +18,12 @@ cmd + ctrl - n : yabai -m window --swap south
 cmd + ctrl - p : yabai -m window --swap north
 cmd + ctrl - f : yabai -m window --swap east
 
-# focus desktop
+# focus virtual desktop
 cmd - j : yabai -m space --focus prev
 cmd - k : yabai -m space --focus recent
 cmd - l : yabai -m space --focus next
 
-# focus virtual monitor
+# focus monitor
 cmd + ctrl - j : yabai -m display --focus prev
 cmd + ctrl - k : yabai -m display --focus recent
 cmd + ctrl - l : yabai -m display --focus next
