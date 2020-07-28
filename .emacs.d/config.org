@@ -139,7 +139,9 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
         kept-new-versions 10  ;; Number of newest versions to keep.
         kept-old-versions 0   ;; Number of oldest versions to keep.
         delete-old-versions t ;; Don't ask to delete excess backup versions.
-        backup-by-copying t)  ;; Copy all files, don't rename them.
+        backup-by-copying t  ;; Copy all files, don't rename them.
+        auto-save-interval 100 ;; Change interval of characters to which auto-save is enabled
+        )
 
   (setq vc-make-backup-files t)
 
@@ -366,13 +368,6 @@ Hier wordt de klok geinitieerd
         (setq org-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
       ))
   (my-setup-odt-org-convert-process)
-#+END_SRC
-
-* Eyebrowse
-#+BEGIN_SRC emacs-lisp
-  (use-package eyebrowse
-    :ensure t)
-  (eyebrowse-mode t)
 #+END_SRC
 
 * Flycheck
@@ -606,7 +601,7 @@ mx ido emulator
 
   (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
   (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
-
+  (define-key mc/keymap (kbd "<return>") nil)
 #+END_SRC
 
 * Narrowing
@@ -637,7 +632,6 @@ mx ido emulator
            (LaTeX-narrow-to-environment))
           (t (narrow-to-defun))))
 
-  (define-key ctl-x-map "n" #'narrow-or-widen-dwim)
 #+END_SRC
 
 * New EWW buffer
@@ -733,17 +727,20 @@ mx ido emulator
   (global-set-key (kbd "C-c c")
                   'org-capture)
 
-  (setq org-capture-templates
-        '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
-           "* %?\n:PROPERTIES:\n:calendar-id: bastiaan.chatel@gmail.com\n:LOCATION:\n:END:\n:org-gcal:\n%^T\nNOTES:\n:END:\n")
-          ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/index.org" "Notes")
-           "* %?\n%u" :prepend t)
-          ("m" "Meeting Notes and Questions" entry (file+headline "~/Dropbox/orgfiles/index.org" "Meeting Notes and Questions")
-           "* %? %u\n" :prepend t)
-          ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/index.org" "Links")
-           "* %? %^L %^g \n%T" :prepend t)
-          ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/index.org" "To Do Items")
-           "* TODO [#%?] \n:PROPERTIES:\nTIME_STAMP: %u\nSCHEDULED: \n:END:\n:NOTES:\n\n\n:END:\n" :prepend t)))
+  (setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
+                                   "* Day journal\n** %(format-time-string org-journal-time-format)%?")))
+
+  ;; (setq org-capture-templates
+  ;;       '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+  ;;          "* %?\n:PROPERTIES:\n:calendar-id: bastiaan.chatel@gmail.com\n:LOCATION:\n:END:\n:org-gcal:\n%^T\nNOTES:\n:END:\n")
+  ;;         ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/index.org" "Notes")
+  ;;          "* %?\n%u" :prepend t)
+  ;;         ("m" "Meeting Notes and Questions" entry (file+headline "~/Dropbox/orgfiles/index.org" "Meeting Notes and Questions")
+  ;;          "* %? %u\n" :prepend t)
+  ;;         ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/index.org" "Links")
+  ;;          "* %? %^L %^g \n%T" :prepend t)
+  ;;         ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/index.org" "To Do Items")
+  ;;          "* TODO [#%?] \n:PROPERTIES:\nTIME_STAMP: %u\nSCHEDULED: \n:END:\n:NOTES:\n\n\n:END:\n" :prepend t)))
 #+END_SRC
 
 * Org-pomodoro
@@ -783,6 +780,12 @@ mx ido emulator
 
   (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
   (setq org-latex-prefer-user-labels t)
+
+  ;; Making emacs find latex (so that C-c C-x C-l works on orgmode)
+  (setenv "PATH" (concat ":/Library/TeX/texbin/" (getenv "PATH")))
+  (add-to-list 'exec-path "/Library/TeX/texbin/")
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.5))
+
 #+END_SRC
 
 * pdf-tools
@@ -817,13 +820,16 @@ mx ido emulator
   (global-set-key (kbd "C-z") 'z-map)
   (define-key z-map (kbd "a") 'org-agenda-show-agenda-and-todo)
   (define-key z-map (kbd "n") 'narrow-or-widen-dwim)
-  (define-key z-map (kbd "u") (defun zshrcEdit () (interactive) (find-file "~/.zshrc")))
+  (define-key z-map (kbd "C-j") 'org-journal-new-entry) 
+  (define-key z-map (kbd "C-t") 'org-journal-today)
+  (define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file "~/.zshrc")))
   (define-key z-map (kbd "i") (defun indexEdit() (interactive) (find-file "~/Dropbox/orgfiles/index.org")))
-  (define-key z-map (kbd "o") (defun skhdEdit() (interactive) (find-file "~/.skhdrc")))
-  (define-key z-map (kbd "p") (defun yabaiEdit() (interactive) (find-file "~/.yabairc")))
+  (define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file "~/.skhdrc")))
+  (define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file "~/qmk_firmware/keyboards/keebio/iris/keymaps/popoiopo/keymap.c")))
+  (define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file "~/.yabairc")))
   (define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file "~/.qutebrowser/qutemacs.py")))
-  (define-key z-map (kbd "j") (defun bibtexEdit() (interactive) (find-file "~/Dropbox/bibliography/references.bib")))
-  (define-key z-map (kbd "k") (defun bibNotesEdit() (interactive) (find-file "~/Dropbox/bibliography/Notes.org")))
+  (define-key z-map (kbd "r") (defun bibtexEdit() (interactive) (find-file "~/Dropbox/bibliography/references.bib")))
+  (define-key z-map (kbd "b") (defun bibNotesEdit() (interactive) (find-file "~/Dropbox/bibliography/Notes.org")))
   (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
   (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
   (define-key z-map (kbd "<down>") 'shrink-window)
@@ -846,7 +852,6 @@ mx ido emulator
   (define-key o-map (kbd "d") 'google-this-line)
   (define-key o-map (kbd "w") 'google-this-word)
   (define-key o-map (kbd "m") 'google-this-maps)
-
 
   (setq ns-function-modifier 'hyper)
 
@@ -911,58 +916,58 @@ mx ido emulator
 
 * Spell checking
 #+BEGIN_SRC emacs-lisp
-  (dolist (hook '(text-mode-hook))
-    (add-hook hook (lambda () (flyspell-mode 1))))
+  ;; (dolist (hook '(text-mode-hook))
+  ;;   (add-hook hook (lambda () (flyspell-mode 1))))
 
-  (eval-after-load "flyspell"
-    '(progn
-       (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
-       (define-key flyspell-mouse-map [mouse-3] #'undefined)))
+  ;; (eval-after-load "flyspell"
+  ;;   '(progn
+  ;;      (define-key flyspell-mouse-map [down-mouse-3] #'flyspell-correct-word)
+  ;;      (define-key flyspell-mouse-map [mouse-3] #'undefined)))
 
-  (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
-  (setq exec-path (append exec-path '("/usr/local/bin")))
+  ;; (setenv "PATH" (concat (getenv "PATH") ":/usr/local/bin"))
+  ;; (setq exec-path (append exec-path '("/usr/local/bin")))
 
-  (add-hook 'python-mode-hook
-      (lambda ()
-      (flyspell-prog-mode)
-      ))
+  ;; (add-hook 'python-mode-hook
+  ;;     (lambda ()
+  ;;     (flyspell-prog-mode)
+  ;;     ))
 
-  ;; ;; use grammar checking
-  ;; (require 'langtool)
-  ;; (add-hook 'text-mode-hook
-  ;;           (lambda () 
-  ;;             (add-hook 'after-save-hook 'langtool-check nil 'make-it-local)))
+  ;; ;; ;; use grammar checking
+  ;; ;; (require 'langtool)
+  ;; ;; (add-hook 'text-mode-hook
+  ;; ;;           (lambda () 
+  ;; ;;             (add-hook 'after-save-hook 'langtool-check nil 'make-it-local)))
 
-  ;; change language based on text
-  (use-package guess-language         ; Automatically detect language for Flyspell
-    :ensure t
-    :defer t
-    :init (add-hook 'text-mode-hook #'guess-language-mode)
-    :config
-    (setq guess-language-langcodes '((en . ("en_GB" "English"))
-                                     (nl . ("nl-NL" "Netherlands")))
-          guess-language-languages '(en nl)
-          guess-language-min-paragraph-length 45)
-    :diminish guess-language-mode)
+  ;; ;; change language based on text
+  ;; (use-package guess-language         ; Automatically detect language for Flyspell
+  ;;   :ensure t
+  ;;   :defer t
+  ;;   :init (add-hook 'text-mode-hook #'guess-language-mode)
+  ;;   :config
+  ;;   (setq guess-language-langcodes '((en . ("en_GB" "English"))
+  ;;                                    (nl . ("nl-NL" "Netherlands")))
+  ;;         guess-language-languages '(en nl)
+  ;;         guess-language-min-paragraph-length 45)
+  ;;   :diminish guess-language-mode)
 
-  ;; easy spell check
-  (global-set-key (kbd "<f8>") 'ispell-word)
-  (global-set-key (kbd "C-S-<f8>") 'flyspell-mode) ;(highlights misspelled words as you type)
-  (global-set-key (kbd "C-M-<f8>") 'flyspell-buffer) ;highlights all misspelled words in the buffer
-  (global-set-key (kbd "C-<f8>") 'flyspell-check-previous-highlighted-word)
-  (defun flyspell-check-next-highlighted-word ()
-    "Custom function to spell check next highlighted word"
-    (interactive)
-    (flyspell-goto-next-error)
-    (ispell-word)
-    )
-  (global-set-key (kbd "M-<f8>") 'flyspell-check-next-highlighted-word)
+  ;; ;; easy spell check
+  ;; (global-set-key (kbd "<f8>") 'ispell-word)
+  ;; (global-set-key (kbd "C-S-<f8>") 'flyspell-mode) ;(highlights misspelled words as you type)
+  ;; (global-set-key (kbd "C-M-<f8>") 'flyspell-buffer) ;highlights all misspelled words in the buffer
+  ;; (global-set-key (kbd "C-<f8>") 'flyspell-check-previous-highlighted-word)
+  ;; (defun flyspell-check-next-highlighted-word ()
+  ;;   "Custom function to spell check next highlighted word"
+  ;;   (interactive)
+  ;;   (flyspell-goto-next-error)
+  ;;   (ispell-word)
+  ;;   )
+  ;; (global-set-key (kbd "M-<f8>") 'flyspell-check-next-highlighted-word)
 
-  ;; Reevaluate buffer after a word is added to dictionary
-  (defun flyspell-buffer-after-pdict-save (&rest _)
-    (flyspell-buffer))
+  ;; ;; Reevaluate buffer after a word is added to dictionary
+  ;; (defun flyspell-buffer-after-pdict-save (&rest _)
+  ;;   (flyspell-buffer))
 
-  (advice-add 'ispell-pdict-save :after #'flyspell-buffer-after-pdict-save)
+  ;; (advice-add 'ispell-pdict-save :after #'flyspell-buffer-after-pdict-save)
 #+END_SRC
 
 * Spotify
@@ -1117,5 +1122,131 @@ mx ido emulator
   ;;  (dolist (buffer (buffer-list))
   ;;    (with-current-buffer buffer
   ;;      ad-do-it))) 
+#+END_SRC
+
+* Org roam
+#+BEGIN_SRC emacs-lisp
+  (use-package org-roam
+        :ensure t
+        :hook
+        (after-init . org-roam-mode)
+        :custom
+        (org-roam-directory "~/Dropbox/RoamNotes/")
+        :bind (:map org-roam-mode-map
+                (("C-c n l" . org-roam)
+                 ("C-c n f" . org-roam-find-file)
+                 ("C-c n g" . org-roam-graph-show))
+                :map org-mode-map
+                (("C-c n i" . org-roam-insert))
+                (("C-c n I" . org-roam-insert-immediate))))
+
+  (setq org-roam-capture-templates
+        '(("d" "default" plain (function org-roam--capture-get-point)
+          "%?"
+          :file-name "%<%Y%m%d%H%M%S>-${slug}"
+          :head "#+title: ${title}\n\n- tags :: \n\n* "
+          :unnarrowed t))
+        )
+#+END_SRC
+
+* Org Journal
+#+BEGIN_SRC emacs-lisp
+  (use-package org-journal
+    :ensure t
+    :defer t
+    :config
+    (setq org-journal-dir "~/Dropbox/RoamNotes/"
+          org-journal-enable-agenda-integration t
+          org-journal-date-prefix "#+TITLE: "
+          org-journal-file-format "%Y-%m-%d.org"
+          org-journal-date-format "%A, %d %B %Y"))
+
+  (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"WAITING\"|TODO=\"FLEETING\"|TODO=\"LONGTERM\"")
+
+  (defun org-journal-file-header-func (time)
+    "Custom function to create journal header."
+    (concat
+      (pcase org-journal-file-type
+        (`daily (concat "#+TITLE: " (format-time-string org-journal-date-format time) "\n#+STARTUP: folded\n* Tags and resources\n- tags :: \n- resources ::\n* TODOS\n")))))
+
+  (setq org-journal-file-header 'org-journal-file-header-func)
+
+  (require 'org-journal)
+
+  (defun org-journal-find-location ()
+    ;; Open today's journal, but specify a non-nil prefix argument in order to
+    ;; inhibit inserting the heading; org-capture will insert the heading.
+    (org-journal-new-entry t)
+    ;; Position point on the journal's top-level heading so that org-capture
+    ;; will add the new entry as a child entry.
+    (goto-char (point-min)))
+
+  (defun org-journal-save-entry-and-exit()
+    "Simple convenience function.
+    Saves the buffer of the current day's entry and kills the window
+    Similar to org-capture like behavior"
+    (interactive)
+    (save-buffer)
+    (kill-buffer-and-window))
+  (define-key org-journal-mode-map (kbd "C-x C-s") 'org-journal-save-entry-and-exit)
+
+  (defun org-journal-today ()
+      (interactive)
+      (org-journal-new-entry t))
+#+END_SRC
+
+* TODOS
+#+BEGIN_SRC emacs-lisp
+  (setq org-todo-keyword-faces
+        '(
+          ("DOING" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
+          ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
+          ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
+          ("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
+          ("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
+          ))
+
+  (setq org-todo-keywords
+        '((sequence "TODO" "DOING" "WAITING" "FLEETING" "|" "LONGTERM" "CANCELED" "DONE")))
+#+END_SRC
+
+* Transparency
+#+BEGIN_SRC emacs-lisp
+  ;;(set-frame-parameter (selected-frame) 'alpha '(<active> . <inactive>))
+  ;;(set-frame-parameter (selected-frame) 'alpha <both>)
+  (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
+  (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
+
+  (defun toggle-transparency ()
+     (interactive)
+     (let ((alpha (frame-parameter nil 'alpha)))
+       (set-frame-parameter
+        nil 'alpha
+        (if (eql (cond ((numberp alpha) alpha)
+                       ((numberp (cdr alpha)) (cdr alpha))
+                       ;; Also handle undocumented (<active> <inactive>) form.
+                       ((numberp (cadr alpha)) (cadr alpha)))
+                 100)
+            '(95 . 95) '(100 . 100)))))
+
+  (global-set-key (kbd "C-c t") 'toggle-transparency)
+#+END_SRC
+
+* Writing
+
+*stolen* from [[https://explog.in/notes/writingsetup.html][this guy]]
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-indent-indentation-per-level 1)
+
+  (setq org-adapt-indentation nil)
+
+  (setq org-hide-emphasis-markers t)
+
+  (customize-set-variable 'org-blank-before-new-entry 
+                          '((heading . nil)
+                            (plain-list-item . nil)))
+  (setq org-cycle-separator-lines 1)
+
 #+END_SRC
 

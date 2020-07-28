@@ -118,7 +118,7 @@ c.bindings.commands['normal'] = {
 	# Commands
 	'<alt-x>': 'set-cmd-text :',
 	'<ctrl-x><ctrl-c>': 'close',
-	'<ctrl-/>': 'undo',
+	# '<ctrl-/>': 'undo',
 
 	# searching
 	'<ctrl-s>': 'set-cmd-text /',
@@ -140,19 +140,19 @@ c.bindings.commands['normal'] = {
         '<ctrl-c>o': 'yank inline [[{url}][{title}]] -s',
     
 	# hinting (shows all links)
-        '<alt-s>f': 'fullscreen',
-	'<alt-s>a': 'hint all',
-	'<alt-s>i': 'hint images',
-	'<alt-s><alt-i>': 'hint images download',
-	'<alt-s><ctrl-i>': 'hint images tab',
-	'<alt-s>l': 'hint links',
-	'<alt-s><alt-l>': 'hint links yank',
-	'<alt-s><ctrl-l>': 'hint links tab',
-	'<alt-s>h': 'hint all hover',
-	'<alt-s>p': 'hint inputs',
-	'<alt-s><alt-p>': 'hint inputs --first',
-	'<alt-s>w': 'hint --rapid links window',
-	'<alt-s>o': 'hint links fill :open -t -r {hint-url}',
+	'<alt-s>': 'hint all',
+        '<alt-l>f': 'fullscreen',
+	'<alt-l>i': 'hint images',
+	'<alt-l><alt-i>': 'hint images download',
+	'<alt-l><ctrl-i>': 'hint images tab',
+	'<alt-l>l': 'hint links',
+	'<alt-l><alt-l>': 'hint links yank',
+	'<alt-l><ctrl-l>': 'hint links tab',
+	'<alt-l>h': 'hint all hover',
+	'<alt-l>p': 'hint inputs',
+	'<alt-l><alt-p>': 'hint inputs --first',
+	'<alt-l>w': 'hint --rapid links window',
+	'<alt-l>o': 'hint links fill :open -t -r {hint-url}',
     
 	# history
 	# FIXME maybe this should be <C-b> <C-n>? Or would that be too confusing?

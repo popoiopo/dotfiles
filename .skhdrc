@@ -23,7 +23,7 @@ cmd - j : yabai -m space --focus prev
 cmd - k : yabai -m space --focus recent
 cmd - l : yabai -m space --focus next
 
-# focus monitor
+# focus5 monitor
 cmd + ctrl - j : yabai -m display --focus prev
 cmd + ctrl - k : yabai -m display --focus recent
 cmd + ctrl - l : yabai -m display --focus next
@@ -85,7 +85,5 @@ default < cmd + ctrl - 2 : open -na iTerm; yabai -m window --space  3; yabai -m 
 default < cmd + ctrl - 3 : open -na emacs; yabai -m window --space  4; yabai -m space --focus 4
 default < cmd + ctrl - 4 : open -na gimp; yabai -m window --space  5; yabai -m space --focus 5
 
-default < cmd + ctrl - 7 : open -na telegram; yabai -m window --space  1; yabai -m space --focus 1
-default < cmd + ctrl - 8 : open -na slack; yabai -m window --space  1; yabai -m space --focus 1
-default < cmd + ctrl - 9 : open -na spotify; yabai -m window --space  2; yabai -m space --focus 2
-default < cmd + ctrl - 0 : open -na skype; yabai -m window --space  6; yabai -m space --focus 6
+default < cmd + ctrl - 7 : open -na All-in-one\ messenger; yabai -m window --space  1; yabai -m space --focus 1
+default < cmd + ctrl - 8 : open -na spotify; yabai -m window --space  2; yabai -m space --focus 2
