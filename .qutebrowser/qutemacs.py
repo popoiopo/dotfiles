@@ -10,9 +10,32 @@
 # 2. Add this line to your config.py, and point the path to this file:
 # config.source('qutemacs/qutemacs.py')
 
+import dracula.draw
+
 
 config = config  # type: ConfigAPI # noqa: F821 pylint: disable=E0602,C0103
 c = c  # type: ConfigContainer # noqa: F821 pylint: disable=E0602,C0103
+
+# Load existing settings made via :set
+config.load_autoconfig()
+
+dracula.draw.blood(c, {
+    'spacing': {
+        'vertical': 2,
+        'horizontal': 2
+    }
+})
+
+# color variables
+brightblack = "#616161"
+brightwhite = "#ffffff"
+purple = '#bd93f9'
+
+## completion widget category headers
+c.colors.completion.category.bg = brightblack
+c.colors.completion.category.border.bottom = purple
+c.colors.completion.category.border.top = brightblack
+c.colors.completion.category.fg = brightwhite
 
 # disable insert mode completely
 c.input.insert_mode.auto_enter = False
@@ -255,4 +278,3 @@ c.bindings.commands['caret'] = {
 	# escape hatch
 	'<ctrl-g>': 'leave-mode',
 }
-

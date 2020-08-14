@@ -48,7 +48,8 @@
  '(hl-sexp-background-color "#1c1f26")
  '(org-agenda-files
    (quote
-    ("~/Dropbox/phd/Validatie Studie/protocol.org" "~/Dropbox/phd/Validatie Studie/variables.org" "~/Dropbox/orgfiles/gcal.org" "~/Dropbox/orgfiles/index.org")))
+    ("~/.emacs.d/config.org" "~/Dropbox/orgfiles/gcal.org" "~/Dropbox/orgfiles/index.org")))
+ '(org-blank-before-new-entry (quote ((heading) (plain-list-item))))
  '(org-html-postamble
    (quote
     (("en" "<p class=\"postamble\">Hallo dit is een test</p>"))))
@@ -70,7 +71,7 @@
    "c:/Users/chatel/AppData/Roaming/.emacs.d/elpa/org-pomodoro-20190530.1445/resources/focus.wav")
  '(package-selected-packages
    (quote
-    (olivetti org-journal org-roam langtool guess-language org-noter-pdftools pdf-tools ox-twbs sphinx-doc anaconda-mode jedi-direx company-jedi auctex-latexmk org-pdfview powershell sound-wav org-pomodoro buffer-move org-noter org-plus-contrib ag dumb-jump eyebrowse all-the-icons-ivy org-gcal undo-tree google-this ob-session-async-R ob-async emmet-mode org-ref ess-smart-underscore ess epc jedi htmlize ox-reveal counsel try yasnippet-snippets pretty-mode expand-region mark-multiple swiper popup-kill-ring symon dmenu diminish spaceline dashboard rainbow-delimiters hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package material-theme better-defaults)))
+    (deft olivetti org-journal org-roam langtool guess-language org-noter-pdftools pdf-tools ox-twbs sphinx-doc anaconda-mode jedi-direx company-jedi auctex-latexmk org-pdfview powershell sound-wav org-pomodoro buffer-move org-noter org-plus-contrib ag dumb-jump eyebrowse all-the-icons-ivy org-gcal undo-tree google-this ob-session-async-R ob-async emmet-mode org-ref ess-smart-underscore ess epc jedi htmlize ox-reveal counsel try yasnippet-snippets pretty-mode expand-region mark-multiple swiper popup-kill-ring symon dmenu diminish spaceline dashboard rainbow-delimiters hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package material-theme better-defaults)))
  '(safe-local-variable-values (quote ((org-confirm-babel-evaluate))))
  '(send-mail-function (quote mailclient-send-it))
  '(vc-annotate-background nil)
