@@ -125,3 +125,5 @@ source /usr/local/opt/powerlevel10k/powerlevel10k.zsh-theme
 export PATH="/usr/local/opt/python/libexec/bin:/usr/local/sbin:$PATH"
 
 alias config='/usr/bin/git --git-dir=$HOME/dotfiles/ --work-tree=$HOME' 
+alias edoom='emacs --with-profile doom'
+alias doom='~/doom-emacs/bin/doom'

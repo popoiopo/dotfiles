@@ -43,7 +43,7 @@ c.input.insert_mode.auto_leave = False
 c.input.insert_mode.plugins = False
 
 # Get rid of the status bar 
-c.statusbar.hide = True
+# c.statusbar.hide = True
 
 ## Format to use for the tab title. The following placeholders are
 ## defined:  * `{perc}`: Percentage as a string like `[10%]`. *
@@ -205,6 +205,7 @@ c.bindings.commands['normal'] = {
 	'<alt-2>': 'tab-focus 2',
 	'<alt-3>': 'tab-focus 3',
 	'<alt-4>': 'tab-focus 4',
+    
 	'<alt-5>': 'tab-focus 5',
 	'<alt-6>': 'tab-focus 6',
 	'<alt-7>': 'tab-focus 7',

@@ -1,32 +1,32 @@
 # ######## YABAI ########
 # focus window
-cmd - b : yabai -m window --focus west
-cmd - n : yabai -m window --focus south
-cmd - p : yabai -m window --focus north
-cmd - f : yabai -m window --focus east
+cmd - h : yabai -m window --focus west
+cmd - j : yabai -m window --focus south
+cmd - k : yabai -m window --focus north
+cmd - l : yabai -m window --focus east
 
 # warp at window in direction of focused window
 #   (options: north, east, south, west)
-cmd + shift - b : yabai -m window --warp west
-cmd + shift - n : yabai -m window --warp south
-cmd + shift - p : yabai -m window --warp north
-cmd + shift - f : yabai -m window --warp east
+cmd + shift - h : yabai -m window --warp west
+cmd + shift - j : yabai -m window --warp south
+cmd + shift - k : yabai -m window --warp north
+cmd + shift - l : yabai -m window --warp east
 
 # swap window
-cmd + ctrl - b : yabai -m window --swap west
-cmd + ctrl - n : yabai -m window --swap south
-cmd + ctrl - p : yabai -m window --swap north
-cmd + ctrl - f : yabai -m window --swap east
+cmd + ctrl - h : yabai -m window --swap west
+cmd + ctrl - j : yabai -m window --swap south
+cmd + ctrl - k : yabai -m window --swap north
+cmd + ctrl - l : yabai -m window --swap east
 
 # focus virtual desktop
-cmd - j : yabai -m space --focus prev
-cmd - k : yabai -m space --focus recent
-cmd - l : yabai -m space --focus next
+cmd - p : yabai -m space --focus prev
+cmd - b : yabai -m space --focus recent
+cmd - n : yabai -m space --focus next
 
 # focus5 monitor
-cmd + ctrl - j : yabai -m display --focus prev
-cmd + ctrl - k : yabai -m display --focus recent
-cmd + ctrl - l : yabai -m display --focus next
+cmd + ctrl - p : yabai -m display --focus prev
+cmd + ctrl - b : yabai -m display --focus recent
+cmd + ctrl - n : yabai -m display --focus next
 
 # toggle window fullscreen zoom
 cmd + alt - f : yabai -m window --toggle zoom-fullscreen
@@ -81,9 +81,9 @@ cmd - 0 : yabai -m space --focus 10
 
 # shortcuts for apps
 default < cmd + ctrl - 1 : open -na qutebrowser
-default < cmd + ctrl - 2 : open -na iTerm; yabai -m window --space  3; yabai -m space --focus 3
-default < cmd + ctrl - 3 : open -na emacs; yabai -m window --space  4; yabai -m space --focus 4
-default < cmd + ctrl - 4 : open -na gimp; yabai -m window --space  5; yabai -m space --focus 5
+default < cmd + ctrl - 2 : open -na iTerm
+default < cmd + ctrl - 3 : open -na emacs
+default < cmd + ctrl - 4 : open -na gimp
 
-default < cmd + ctrl - 7 : open -na All-in-one\ messenger; yabai -m window --space  1; yabai -m space --focus 1
-default < cmd + ctrl - 8 : open -na spotify; yabai -m window --space  2; yabai -m space --focus 2
+default < cmd + ctrl - 0 : open -na All-in-one\ messenger; yabai -m window --space  1; yabai -m space --focus 1
+default < cmd + ctrl - 9 : open -na spotify; yabai -m window --space  2; yabai -m space --focus 2
