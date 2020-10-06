@@ -1,0 +1,69 @@
+
+;; ----- amx-history -----
+(
+ visual-line-mode
+ eww
+ org-agenda
+ org-schedule
+ rainbow-delimiters-mode
+ rainbow-mode
+ mc/skip-to-next-like-this
+ er/expand-region
+ list-packages
+ package-install
+ org-indent-mode
+ cd
+ 5x5
+ amx
+ arp
+ dbx
+ dig
+ erc
+ ert
+ ftp
+ gdb
+ irc
+ jdb
+ man
+ mpc
+ pdb
+ pwd
+ rsh
+ sdb
+ try
+ wos
+ xdb
+ calc
+ diff
+ ffap
+ gnus
+ grep
+ help
+ ielm
+ info
+ life
+ mail
+ mpuz
+ ping
+ pong
+ smex
+ talk
+ term
+ undo
+ yank
+)
+
+;; ----- amx-data -----
+(
+ (visual-line-mode . 5)
+ (org-indent-mode . 2)
+ (package-install . 2)
+ (list-packages . 2)
+ (er/expand-region . 1)
+ (mc/skip-to-next-like-this . 3)
+ (rainbow-mode . 3)
+ (rainbow-delimiters-mode . 2)
+ (org-schedule . 1)
+ (org-agenda . 1)
+ (eww . 1)
+)

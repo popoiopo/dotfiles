@@ -1,0 +1,17 @@
+
+;; ----- smex-history -----
+(
+ all-the-icons-insert-faicon
+ all-the-icons-insert-octicon
+ cd
+ 5x5
+ arp
+ dbx
+ dig
+)
+
+;; ----- smex-data -----
+(
+ (all-the-icons-insert-octicon . 2)
+ (all-the-icons-insert-faicon . 1)
+)

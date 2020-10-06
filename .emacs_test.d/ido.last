@@ -1,0 +1,53 @@
+;;; -*- coding: utf-8 -*-
+
+;; ----- ido-last-directory-list -----
+(
+ ("/Users/chatel/" . "github/")
+ ("/Users/chatel/.emacs_test.d/backup/" . "per-save/")
+ ("/Users/chatel/.emacs_test.d/" . "backup/")
+ ("/Users/chatel/github/" . "methodPaper/")
+)
+
+;; ----- ido-work-directory-list -----
+(
+ "/Users/chatel/github/"
+ "/Users/chatel/Dropbox/"
+ "/Users/chatel/.emacs_test.d/"
+ "/Users/chatel/.emacs_test.d/backup/per-save/"
+ "/Users/chatel/"
+)
+
+;; ----- ido-work-file-list -----
+(
+ "main.py"
+ "index.org"
+ "ido.last"
+ "smex-items"
+ "init.el"
+ "config.el"
+ "!Users!chatel!.emacs_test.d!ido.last~"
+ "tmp.org"
+ "config.org"
+)
+
+;; ----- ido-dir-file-cache -----
+(
+ ("/Users/chatel/.emacs_test.d/" (24432 42702 656894 815000) "backup/" "config.org~" "diary" "bookmarks" "init.el" "url/" "config.el" "straight/" "transient/" "ido.last~" "config.org" "smex-items" ".DS_Store" "init.el~" "ido.last" "snippets/" "../" "./")
+
+ ("/Users/chatel/github/methodPaper/" (24431 19384 438451 762000) "4farmers.png" "stock_and_flow.png" "image.png" "story.pdf" "nak_sf2.png" "network.png" "story.org" ".git/" "Untitled Diagram.drawio" ".ipynb_checkpoints/" "nak_sf.png" "story.tex" "alternate methods.ipynb" "dataTable.png" "MLE_split_data.png" "test_best_train.png" "story.html" "story.tex~" "a1_3.png" "Untitled.ipynb" "Methods paper example.ipynb" "nak_cld.png" ".DS_Store" "simdata.png" "a2.png" "light_fit.png" "story.org~" "not_all_known.drawio" "../" "./")
+
+ ("/Users/chatel/.emacs_test.d/backup/per-save/" (24431 41364 617474 342000) "!Users!chatel!.emacs_test.d!ido.last~" "!Users!chatel!Dropbox!index.tex.~2~" "!Users!chatel!Dropbox!index.tex.~1~" "../" "./")
+
+ ("/Users/chatel/Dropbox/" (24431 41626 81896 407000) "index.doc" "test.tex" "Toelatingsverzoek_phd.pdf" ".dropbox.cache/" "toelatings_verzoek_phd.pdf" "tmp6u6gjn71_UMCRPS02PRD_PRTC0386_Ol...ert_ Marcel_4530_001.pdf" "vakantie reading/" ".dropbox" "test.pdf" "orgfiles/" "RoamNotes/" "#test.org#" "index.ist" "phd/" "index.tex" "index.ind" "index.odt" ".#Aan de slag met Orgzly.org" "bibliography/" "index.pdf" "Icon" "zettels/" "index.glo" ".DS_Store" "index.ilg" "org-ref.bib" "index.org" "index.bbl" "../" "./")
+
+ ("/Users/chatel/" (24431 42946 908994 762000) ".venple" ".skhdrc~" ".slime/" "SpringerLibrary/" ".viminfo" ".yabairc~" "common-lisp/" ".cache/" ".python_history" "Downloads/" ".zcompdump-Bas’s MacBook Pro-5.7.1" ".oh-my-zsh/" ".Xauthority" "Envs/" "done.txt" ".ispell_english" ".fzf/" "qmk_firmware/" ".vscode/" ".rstudio-desktop/" "FairyTale_BasChatel.pdf" "doom-emacs/" "Documents/" ".vmware/" ".npm/" ".jupyter/" ".yabairc" ".Trash/" "Dropbox/" "rofi/" "Applications/" ".emacs" "Movies/" ".ssh/" ".latexmkrc" ".#test.org" "libxkbcommon/" ".RData" "github/" ".dropbox/" ".fzf.bash" "Public/" ".fzf.zsh" "chemacs/" "org-roam.db" ".p10k.zsh" ".lpass/" ".emacs.d/" ".password-store/" "tmp.org" ".skhdrc" ".doom.d/" ".emacs-profiles.el" ".matplotlib/" "Library/" "Desktop/" "#test.org#" ".ipython/" ".zsh_history" ".zcompdump-Bas’s MacBook Pro-5.8" ".zprofile" ".notes" ".pylint.d/" "Pictures/" ".local/" "Makefile" ".qutebrowser/" ".zshrc" ".bashrc" ".subversion/" "venple.err" "bin/" ".wget-hsts" ".CFUserTextEncoding" "dotfiles/" ".thumbnails/" ".zshrc~" ".gnupg/" ".emacs_test.d/" ".DS_Store" "tmp.tex" ".vim/" ".virtualenvs/" "#orgtmp.org#" ".emacs-profiles.el~" ".orhc-bibtex-cache" "Music/" ".config/" ".Rhistory" ".org-timestamps/" "../" "./")
+
+ ("/Users/chatel/.emacs_test.d/backup/" (24431 23112 589831 840000) "per-save/" "per-session/" "../" "./")
+
+ ("/Users/chatel/github/Thesis_Final/" (24189 1010 762576 57000) "normalized1.svg" "test.svg" "normalized0.svg" "normalized2.svg" "Final picture making.ipynb" "patch_1-5.png" "data/" "tinyTestData/" "normalized32.svg" "normalized30.svg" "normalized31.svg" ".ipynb_checkpoints/" "GA_mean_var_small.svg" "allScoreDists.png" "conf2_small.png" "simulationFiles/" "test.png" "img/" "README.md" "__pycache__/" ".png" "normalizedAll.png" "conf1_small.png" "initValues.py" "Create_CLD_Depression_Network/" "normalizedAll.pdf" "normalizedAll.svg" ".DS_Store" "GA_functions.py" "conf0_small.png" "configurations/" "../" "./")
+
+ ("/Users/chatel/github/" (24257 609 445616 183000) "Thesis_Final/" "Final picture making.ipynb" "main.py" ".ipynb_checkpoints/" "bioSysDat/" "popoiopo.github.io/" "covid_19/" "methodPaper/" ".DS_Store" "index.html" "main.py~" "functions.py" "../" "./")
+)
+
+;; ----- ido-unc-hosts-cache -----
+t

@@ -19,14 +19,12 @@ cmd + ctrl - k : yabai -m window --swap north
 cmd + ctrl - l : yabai -m window --swap east
 
 # focus virtual desktop
-cmd - p : yabai -m space --focus prev
-cmd - b : yabai -m space --focus recent
-cmd - n : yabai -m space --focus next
+cmd + alt - j : yabai -m space --focus prev
+cmd + alt - k : yabai -m space --focus next
 
 # focus5 monitor
-cmd + ctrl - p : yabai -m display --focus prev
-cmd + ctrl - b : yabai -m display --focus recent
-cmd + ctrl - n : yabai -m display --focus next
+cmd + alt - h : yabai -m display --focus prev
+cmd + alt - l : yabai -m display --focus next
 
 # toggle window fullscreen zoom
 cmd + alt - f : yabai -m window --toggle zoom-fullscreen
@@ -51,7 +49,7 @@ cmd + alt - r : yabai -m space --rotate 90
 
 # change layout of desktop
 cmd + alt - b : yabai -m space --layout bsp
-cmd + alt - l : yabai -m space --layout float
+cmd + alt - v : yabai -m space --layout float
 
 # send window to desktop and follow focus
 cmd + alt - 1 : yabai -m window --space  1; yabai -m space --focus 1

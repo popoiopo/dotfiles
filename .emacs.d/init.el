@@ -4,7 +4,6 @@
 ;; MELPA Package Support
 ;; ===================================
 ;; Enables basic packaging support
-(require 'cl)
 (require 'package)
 (setq package-enable-at-startup nil)
 
@@ -46,7 +45,7 @@
  '(fci-rule-color "#37474f")
  '(hl-sexp-background-color "#1c1f26")
  '(org-agenda-files
-   '("~/Dropbox/orgfiles/gcal.org" "~/Dropbox/orgfiles/index.org" "/Users/chatel/Dropbox/RoamNotes/org-journal/2020-09-11.org"))
+   '("~/Dropbox/orgfiles/gcal.org" "~/Dropbox/orgfiles/index.org" "/Users/chatel/Dropbox/RoamNotes/org-journal/2020-10-04.org"))
  '(org-blank-before-new-entry '((heading) (plain-list-item)))
  '(org-html-postamble
    '(("en" "<p class=\"postamble\">Hallo dit is een test</p>")))

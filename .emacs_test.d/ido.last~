@@ -1,0 +1,34 @@
+;;; -*- coding: utf-8 -*-
+
+;; ----- ido-last-directory-list -----
+(
+ ("/Users/chatel/github/" . "Thesis_Final/")
+)
+
+;; ----- ido-work-directory-list -----
+(
+ "/Users/chatel/"
+ "/Users/chatel/.emacs_test.d/"
+)
+
+;; ----- ido-work-file-list -----
+(
+ "tmp.org"
+ "config.org"
+)
+
+;; ----- ido-dir-file-cache -----
+(
+ ("/Users/chatel/" (24431 21839 20096 288000) ".venple" ".skhdrc~" ".slime/" "SpringerLibrary/" ".viminfo" ".yabairc~" "common-lisp/" ".cache/" ".python_history" "Downloads/" ".zcompdump-Bas’s MacBook Pro-5.7.1" ".oh-my-zsh/" ".Xauthority" "Envs/" "done.txt" ".ispell_english" ".fzf/" "qmk_firmware/" ".vscode/" ".rstudio-desktop/" "FairyTale_BasChatel.pdf" "doom-emacs/" "Documents/" ".vmware/" ".npm/" ".jupyter/" ".yabairc" ".Trash/" "Dropbox/" "rofi/" "Applications/" ".emacs" "Movies/" ".ssh/" ".latexmkrc" ".#test.org" "libxkbcommon/" ".RData" "github/" ".dropbox/" ".fzf.bash" "Public/" ".fzf.zsh" "chemacs/" "org-roam.db" ".p10k.zsh" ".lpass/" ".emacs.d/" ".password-store/" "tmp.org" ".skhdrc" ".doom.d/" ".emacs-profiles.el" ".matplotlib/" "Library/" "Desktop/" "#test.org#" ".ipython/" ".zsh_history" ".zcompdump-Bas’s MacBook Pro-5.8" ".zprofile" ".pylint.d/" "Pictures/" ".local/" "Makefile" ".qutebrowser/" ".zshrc" ".bashrc" ".subversion/" "venple.err" "bin/" ".wget-hsts" ".CFUserTextEncoding" "dotfiles/" ".thumbnails/" ".zshrc~" ".gnupg/" ".emacs_test.d/" ".DS_Store" "tmp.tex" ".vim/" ".virtualenvs/" "#orgtmp.org#" ".emacs-profiles.el~" ".orhc-bibtex-cache" "Music/" ".config/" ".Rhistory" ".org-timestamps/" "../" "./")
+
+ ("/Users/chatel/.emacs_test.d/" (24431 22890 9871 875000) "config.org~" ".#config.org" "init.el" "config.el" "#config.org#" "straight/" "transient/" "config.org" "smex-items" "init.el~" "ido.last" "snippets/" "../" "./")
+
+ ("/Users/chatel/github/Thesis_Final/" (24189 1010 762576 57000) "normalized1.svg" "test.svg" "normalized0.svg" "normalized2.svg" "Final picture making.ipynb" "patch_1-5.png" "data/" "tinyTestData/" "normalized32.svg" "normalized30.svg" "normalized31.svg" ".ipynb_checkpoints/" "GA_mean_var_small.svg" "allScoreDists.png" "conf2_small.png" "simulationFiles/" "test.png" "img/" "README.md" "__pycache__/" ".png" "normalizedAll.png" "conf1_small.png" "initValues.py" "Create_CLD_Depression_Network/" "normalizedAll.pdf" "normalizedAll.svg" ".DS_Store" "GA_functions.py" "conf0_small.png" "configurations/" "../" "./")
+
+ ("/Users/chatel/github/" (24257 609 445616 183000) "Thesis_Final/" "Final picture making.ipynb" "main.py" ".ipynb_checkpoints/" "bioSysDat/" "popoiopo.github.io/" "covid_19/" "methodPaper/" ".DS_Store" "index.html" "main.py~" "functions.py" "../" "./")
+
+ ("/Users/chatel/github/methodPaper/" (24431 18449 971538 323000) "4farmers.png" "stock_and_flow.png" "image.png" "story.pdf" "nak_sf2.png" "network.png" "story.org" ".git/" "Untitled Diagram.drawio" ".ipynb_checkpoints/" "nak_sf.png" "story.tex" "alternate methods.ipynb" "dataTable.png" "MLE_split_data.png" "test_best_train.png" "story.html" ".#test.py" "story.tex~" "#test.py#" "a1_3.png" "Untitled.ipynb" "Methods paper example.ipynb" "nak_cld.png" ".DS_Store" "simdata.png" "a2.png" "light_fit.png" "story.org~" "not_all_known.drawio" "../" "./")
+)
+
+;; ----- ido-unc-hosts-cache -----
+t

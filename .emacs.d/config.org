@@ -1,6 +1,797 @@
 #+STARTUP: overview
 
-* All things blog publishing
+* done - avy
+#+BEGIN_SRC emacs-lisp
+  (use-package avy
+    :ensure t
+    :bind
+    ("M-s" . avy-goto-char))
+#+END_SRC
+* done - Backup files
+#+BEGIN_SRC emacs-lisp
+  (setq version-control t     ;; Use version numbers for backups.
+        kept-new-versions 10  ;; Number of newest versions to keep.
+        kept-old-versions 0   ;; Number of oldest versions to keep.
+        delete-old-versions t ;; Don't ask to delete excess backup versions.
+        backup-by-copying t  ;; Copy all files, don't rename them.
+        auto-save-interval 100 ;; Change interval of characters to which auto-save is enabled
+        )
+
+  (setq vc-make-backup-files t)
+
+  ;; Default and per-save backups go here:
+  (setq backup-directory-alist '(("" . "~/.emacs.d/backup/per-save")))
+
+  (defun force-backup-of-buffer ()
+    ;; Make a special "per session" backup at the first save of each
+    ;; emacs session.
+    (when (not buffer-backed-up)
+      ;; Override the default parameters for per-session backups.
+      (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
+            (kept-new-versions 3))
+        (backup-buffer)))
+    ;; Make a "per save" backup on each save.  The first save results in
+    ;; both a per-session and a per-save backup, to keep the numbering
+    ;; of per-save backups consistent.
+    (let ((buffer-backed-up nil))
+      (backup-buffer)))
+
+  (add-hook 'before-save-hook  'force-backup-of-buffer)
+#+END_SRC
+* done - Basic improvements
+** Basics
+#+BEGIN_SRC emacs-lisp
+  (setq scroll-conservatively 100)    ;; Keep from making huge jumps
+  (setq ring-bell-function 'ignore)   ;; Unable annoying sounds
+  (setq visible-bell 1)               ;; disable annoying windows sound
+  (setq inhibit-startup-message t)    ;; Hide the startup message
+  (global-set-key (kbd "<f5>") 'revert-buffer)
+  (setq-default display-line-numbers 'relative)
+  (global-auto-revert-mode t)
+  (delete-selection-mode 1)
+  (use-package try
+    :ensure t)
+  (use-package page-break-lines
+    :ensure t
+    :init
+    (turn-on-page-break-lines-mode))
+  (setq electric-pair-pairs '(
+                              (?\( . ?\))
+                              (?\[ . ?\])
+                              (?\" . ?\")
+                              (?\{ . ?\})
+                              ))
+  (electric-pair-mode t)
+
+  (tool-bar-mode -1)                  ;; Get rid of tool-bar
+  (menu-bar-mode -1)                  ;; Git rid of menu
+  (scroll-bar-mode -1)                ;; Get rid of scroll-bar
+
+  (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
+
+  (when window-system (global-hl-line-mode t))            ;; Get a current line shadow in IDE
+
+  (use-package beacon
+    :ensure t
+    :init
+    (beacon-mode 1))                  ;; Enable small light to show where current frame is
+
+  (use-package which-key
+    :ensure t
+    :init
+    (which-key-mode))                 ;; Upon C-x get a list of possible options
+
+  (setq save-interprogram-paste-before-kill t) ;; perpetuates system clipboard
+  #+END_SRC
+
+** subword
+#+BEGIN_SRC emacs-lisp
+(global-subword-mode 1)
+#+END_SRC
+
+** clock
+Hier wordt de klok geinitieerd
+#+BEGIN_SRC emacs-lisp
+  (setq display-time-24hr-format t)
+  (display-time-mode 1)
+#+END_SRC
+
+** popup kill-ring
+#+BEGIN_SRC emacs-lisp
+  (use-package popup-kill-ring
+    :ensure t
+    :bind ("M-y" . popup-kill-ring))
+#+END_SRC
+* done - Buffer-move
+#+BEGIN_SRC emacs-lisp
+(use-package buffer-move
+  :ensure t)
+#+END_SRC
+* done - Buffers
+
+** enable ibuffer
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x b") 'ibuffer)
+#+END_SRC
+
+** expert
+#+BEGIN_SRC emacs-lisp
+  (setq ibuffer-expert t)
+#+END_SRC
+
+** allways kill current buffer
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-x k") 'kill-current-buffer)
+#+END_SRC
+
+** kill all buffers
+#+BEGIN_SRC emacs-lisp
+  (defun kill-all-buffers ()
+    (interactive)
+    (mapc 'kill-buffer (buffer-list)))
+  (global-set-key (kbd "C-M-s-k") 'kill-all-buffers)
+#+END_SRC
+* done - Export to word
+#+BEGIN_SRC emacs-lisp
+  ;; This setup is tested on Emacs 24.3 & Emacs 24.4 on Linux/OSX
+  ;; org v7 bundled with Emacs 24.3
+  (setq org-export-odt-preferred-output-format "doc")
+  ;; org v8 bundled with Emacs 24.4
+  (setq org-odt-preferred-output-format "doc")
+  ;; BTW, you can assign "pdf" in above variables if you prefer PDF format
+
+  ;; Only OSX need below setup
+  (defun my-setup-odt-org-convert-process ()
+    (interactive)
+    (let ((cmd "/Applications/LibreOffice.app/Contents/MacOS/soffice"))
+      (when (and (eq system-type 'darwin) (file-exists-p cmd))
+        ;; org v7
+        (setq org-export-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")))
+        ;; org v8
+        (setq org-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
+      ))
+  (my-setup-odt-org-convert-process)
+#+END_SRC
+* done - Hungry-delete
+#+BEGIN_SRC emacs-lisp
+  (use-package hungry-delete
+    :ensure t
+    :config (global-hungry-delete-mode))
+#+END_SRC
+* done - Link to org section
+#+BEGIN_SRC emacs-lisp
+(global-set-key (kbd "C-c l") 'org-store-link)
+(global-set-key (kbd "C-c C-l") 'org-insert-link)
+#+END_SRC
+* done - Narrowing
+#+BEGIN_SRC emacs-lisp
+  (defun narrow-or-widen-dwim (p)
+    "Widen if buffer is narrowed, narrow-dwim otherwise.
+  Dwim means: region, org-src-block, org-subtree, or
+  defun, whichever applies first. Narrowing to
+  org-src-block actually calls `org-edit-src-code'.
+
+  With prefix P, don't widen, just narrow even if buffer
+  is already narrowed."
+    (interactive "P")
+    (declare (interactive-only))
+    (cond ((and (buffer-narrowed-p) (not p)) (widen))
+          ((region-active-p)
+           (narrow-to-region (region-beginning)
+                             (region-end)))
+          ((derived-mode-p 'org-mode)
+           ;; `org-edit-src-code' is not a real narrowing
+           ;; command. Remove this first conditional if
+           ;; you don't want it.
+           (cond ((ignore-errors (org-edit-src-code) t)
+                  (delete-other-windows))
+                 ((ignore-errors (org-narrow-to-block) t))
+                 (t (org-narrow-to-subtree))))
+          ((derived-mode-p 'latex-mode)
+           (LaTeX-narrow-to-environment))
+          (t (narrow-to-defun))))
+
+#+END_SRC
+* done - Org Journal
+#+BEGIN_SRC emacs-lisp
+  (use-package org-journal
+    :ensure t
+    :defer t
+    :config
+    (setq org-journal-dir "~/Dropbox/RoamNotes/org-journal/"
+          org-journal-enable-agenda-integration t
+          org-journal-date-prefix "#+TITLE: "
+          org-journal-file-format "%Y-%m-%d.org"
+          org-journal-date-format "%A, %d %B %Y"))
+
+  (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"WAITING\"|TODO=\"FLEETING\"|TODO=\"LONGTERM\"")
+
+  (defun org-journal-file-header-func (time)
+    "Custom function to create journal header."
+    (concat
+      (pcase org-journal-file-type
+        (`daily (concat "#+TITLE: " (format-time-string org-journal-date-format time) "\n#+STARTUP: folded\n* Tags and resources\n- tags :: \n- resources ::\n* TODOS\n")))))
+
+  (setq org-journal-file-header 'org-journal-file-header-func)
+
+  (require 'org-journal)
+
+  (defun org-journal-find-location ()
+    ;; Open today's journal, but specify a non-nil prefix argument in order to
+    ;; inhibit inserting the heading; org-capture will insert the heading.
+    (org-journal-new-entry t)
+    ;; Position point on the journal's top-level heading so that org-capture
+    ;; will add the new entry as a child entry.
+    (goto-char (point-min)))
+
+  (defun org-journal-save-entry-and-exit()
+    "Simple convenience function.
+    Saves the buffer of the current day's entry and kills the window
+    Similar to org-capture like behavior"
+    (interactive)
+    (save-buffer)
+    (kill-buffer-and-window))
+  (define-key org-journal-mode-map (kbd "C-x C-s") 'org-journal-save-entry-and-exit)
+
+  (defun org-journal-today ()
+      (interactive)
+      (org-journal-new-entry t))
+#+END_SRC
+* done - Org roam
+#+BEGIN_SRC emacs-lisp
+  (use-package org-roam
+        :ensure t
+        :hook
+        (after-init . org-roam-mode)
+        :custom
+        (org-roam-directory "~/Dropbox/RoamNotes/")
+        (org-roam-db-location "/Users/chatel/org-roam.db")
+        :bind (:map org-roam-mode-map
+                (("C-c n l" . org-roam)
+                 ("C-c n f" . orb-find-non-ref-file)
+                 ("C-c n g" . org-roam-graph-show))
+                :map org-mode-map
+                (("C-c n i" . orb-insert-non-ref))
+                (("C-c n I" . org-roam-insert-immediate))))
+
+  (setq org-roam-capture-templates
+        '(
+          ;; Alle informatie met referenties naar waar ik het vandaan heb. Dit wordt het grootste deel die concepten uitlegt met referenties naar snippets.
+          ("k" "Knowledge base" plain (function org-roam--capture-get-point)
+          "%?"
+          :file-name "knowledge_base/%<%Y%m%d%H%M%S>-${slug}"
+          :head "#+title: ${title}\n\n- tags :: [[file:20200729175519-knowledge_base.org][Knowledge base]]\n\n* "
+          :unnarrowed t)
+
+          ;; Hier staat alle informatie over mensen die ik ken; waar ik ze van ken, waar ze goed in zijn, verjaardag, etc. Dit functioneert als basis waar ik naar kan refereren als ik hulp nodig heb van iemand en ook voor leuk dat ik kan terug zien wat ik met die persoon heb gedaan vanuit de org-journal folder.
+          ("p" "Personal" plain (function org-roam--capture-get-point)
+            "%?"
+            :file-name "personal/%<%Y%m%d%H%M%S>-${slug}"
+            :head "#+title: ${title}\n\n- tags ::  [[file:20200729175551-personal.org][personal]]\n- birthday :: \n- Contact\n  - Phonenumber :: \n  - Email :: \n\n* "
+            :unnarrowed t)
+
+          ;; Hier komen alle interessante ideeën die niet perse met literatuur versterkt worden, niet goed uitgewerkt zijn of simpelweg een interessante notion is waar ik later iets mee kan.
+          ("i" "Ideas" plain (function org-roam--capture-get-point)
+            "%?"
+            :file-name "ideas/%<%Y%m%d%H%M%S>-${slug}"
+            :head "#+title: ${title}\n\n- tags :: [[file:20200729175615-ideas.org][Ideas]]\n\n* "
+            :unnarrowed t)
+
+          ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
+          ("a" "Papers and Articles" plain (function org-roam--capture-get-point)
+            "%?"
+            :file-name "papers_and_articles/%<%Y%m%d%H%M%S>-${slug}"
+            :head "#+title: ${title}\n\n- tags :: [[file:20200729175758-papers_and_articles.org][papers_and_articles]]\n\n* "
+            :unnarrowed t)
+
+          ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
+          ("w" "Work" plain (function org-roam--capture-get-point)
+            "%?"
+            :file-name "work/%<%Y%m%d%H%M%S>-${slug}"
+            :head "#+title: ${title}\n\n- tags :: [[file:20200902142233-work.org][work]]\n\n* "
+            :unnarrowed t)
+
+          ;; Hier staan, labelled per programmeer taal en functie (optimization, plotting, etc.), de snippets voor bepaalde methodes, wiskundige formules die uitgeprogrammeerd zijn etc.
+          ("s" "Snippets" plain (function org-roam--capture-get-point)
+            "%?"
+            :file-name "snippets/%<%Y%m%d%H%M%S>-${slug}"
+            :head "#+title: ${title}\n\n- tags :: [[file:20200729175823-snippets.org][snippets]]\n\n* "
+            :unnarrowed t)
+          )
+        )
+
+  (setq org-roam-tag-sources '(prop last-directory))
+#+END_SRC
+* done - rainbow
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-mode
+    :ensure t
+    :init (add-hook 'prog-mode-hook 'rainbow-mode))
+#+END_SRC
+#+BEGIN_SRC emacs-lisp
+  (use-package rainbow-delimiters
+    :ensure t
+    :init
+    (rainbow-delimiters-mode 1))
+#+END_SRC
+* done - Switch to previous buffer
+#+BEGIN_SRC emacs-lisp
+  (defun er-switch-to-previous-buffer ()
+    "Switch to previously open buffer.
+  Repeated invocations toggle between the two most recently open buffers."
+    (interactive)
+    (switch-to-buffer (other-buffer (current-buffer))))
+
+  (global-set-key (kbd "C-c b") #'er-switch-to-previous-buffer)
+#+END_SRC
+* done - switchwindow
+#+BEGIN_SRC emacs-lisp
+  (use-package switch-window
+    :ensure t
+    :config
+    (setq switch-window-input-style 'minibuffer)
+    (setq switch-window-increase 4)
+    (setq switch-window-threshold 2)
+    (setq switch-window-shortcut-style 'qwerty)
+    (setq switch-window-qwerty-shortcuts
+	  '("a" "s" "d" "f" "h" "j" "k" "l"))
+    :bind
+    ([remap other-window] . switch-window))
+#+END_SRC
+* done - Tags
+#+BEGIN_SRC emacs-lisp
+ (setq org-tag-alist '(("@work" . ?w) ("@home" . ?h) ("@loneliness" . ?l) ("@gaming" . ?g) ("@complexity" . ?c) ))
+#+END_SRC
+* done - TODOS
+#+BEGIN_SRC emacs-lisp
+  (setq org-todo-keyword-faces
+        '(
+          ("DOING" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
+          ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
+          ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
+          ("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
+          ("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
+          ))
+
+  (setq org-todo-keywords
+        '((sequence "TODO(t)" "DOING(d)" "WAITING(w)" "FLEETING(f)" "|" "LONGTERM(l)" "CANCELED(c)" "DONE(f)")))
+#+END_SRC
+* done - Toggle fullscreen buffer
+#+BEGIN_SRC emacs-lisp
+  (defun toggle-maximize-buffer () "Maximize buffer"
+    (interactive)
+    (if (= 1 (length (window-list)))
+        (jump-to-register '_) 
+      (progn
+        (window-configuration-to-register '_)
+        (delete-other-windows))))
+  (global-set-key (kbd "C-M-f") 'toggle-maximize-buffer)
+#+END_SRC
+* done - Reveal.js
+#+BEGIN_SRC emacs-lisp
+(use-package ox-reveal
+:ensure ox-reveal)
+
+(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
+(setq org-reveal-mathjax t)
+
+(use-package htmlize
+:ensure t)
+#+END_SRC
+* done - Transparency
+#+BEGIN_SRC emacs-lisp
+  ;;(set-frame-parameter (selected-frame) 'alpha '(<active> . <inactive>))
+  ;;(set-frame-parameter (selected-frame) 'alpha <both>)
+  (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
+  (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
+
+  (defun toggle-transparency ()
+     (interactive)
+     (let ((alpha (frame-parameter nil 'alpha)))
+       (set-frame-parameter
+        nil 'alpha
+        (if (eql (cond ((numberp alpha) alpha)
+                       ((numberp (cdr alpha)) (cdr alpha))
+                       ;; Also handle undocumented (<active> <inactive>) form.
+                       ((numberp (cadr alpha)) (cadr alpha)))
+                 100)
+            '(95 . 95) '(100 . 100)))))
+
+  (global-set-key (kbd "C-c t") 'toggle-transparency)
+#+END_SRC
+* done - window splitting function
+#+BEGIN_SRC emacs-lisp
+  (defun split-and-follow-horizontally ()
+    (interactive)
+    (split-window-below)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
+
+  (defun split-and-follow-vertically ()
+    (interactive)
+    (split-window-right)
+    (balance-windows)
+    (other-window 1))
+  (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+#+END_SRC
+* done - Writing
+
+*stolen* from [[https://explog.in/notes/writingsetup.html][this guy]]
+
+#+BEGIN_SRC emacs-lisp
+  (setq org-indent-indentation-per-level 1)
+
+  (setq org-adapt-indentation nil)
+
+  (setq org-hide-emphasis-markers t)
+
+  (customize-set-variable 'org-blank-before-new-entry 
+                          '((heading . nil)
+                            (plain-list-item . nil)))
+  (setq org-cycle-separator-lines 1)
+
+#+END_SRC
+* done - yassnippet
+#+BEGIN_SRC emacs-lisp
+  (use-package yasnippet
+    :ensure t
+    :config (use-package yasnippet-snippets
+              :ensure t)
+    (yas-reload-all))
+
+  (yas-global-mode 1)
+
+#+END_SRC
+* done - config edit/reload
+
+** edit
+#+BEGIN_SRC emacs-lisp
+  (defun config-visit ()
+    (interactive)
+    (find-file "~/.emacs.d/config.org"))
+  (global-set-key (kbd "C-c e") 'config-visit)
+#+END_SRC
+
+** reload
+#+BEGIN_SRC emacs-lisp
+  (defun config-reload ()
+    (interactive)
+    (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
+  (global-set-key (kbd "C-c r") 'config-reload)
+#+END_SRC
+* done - Org Capture
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c c")
+                  'org-capture)
+
+  (setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
+                                   "* Day journal\n** %(format-time-string org-journal-time-format)%?")))
+
+  ;; (setq org-capture-templates
+  ;;       '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
+  ;;          "* %?\n:PROPERTIES:\n:calendar-id: bastiaan.chatel@gmail.com\n:LOCATION:\n:END:\n:org-gcal:\n%^T\nNOTES:\n:END:\n")
+  ;;         ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/index.org" "Notes")
+  ;;          "* %?\n%u" :prepend t)
+  ;;         ("m" "Meeting Notes and Questions" entry (file+headline "~/Dropbox/orgfiles/index.org" "Meeting Notes and Questions")
+  ;;          "* %? %u\n" :prepend t)
+  ;;         ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/index.org" "Links")
+  ;;          "* %? %^L %^g \n%T" :prepend t)
+  ;;         ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/index.org" "To Do Items")
+  ;;          "* TODO [#%?] \n:PROPERTIES:\nTIME_STAMP: %u\nSCHEDULED: \n:END:\n:NOTES:\n\n\n:END:\n" :prepend t)))
+#+END_SRC
+* done - modeline
+
+** spaceline
+#+BEGIN_SRC emacs-lisp
+  (use-package spaceline
+    :ensure t
+    :config
+    (require 'spaceline-config)
+    (setq powerline-default-separator (quote arrow))
+    (spaceline-spacemacs-theme))
+#+END_SRC
+
+** diminish
+#+BEGIN_SRC emacs-lisp
+    (use-package diminish
+      :ensure t
+      :init
+      (diminish 'hungry-delete-mode)
+      (diminish 'beacon-mode)
+      (diminish 'which-key-mode)
+      (diminish 'subword-mode)
+      (diminish 'rainbow-mode)
+      (diminish 'google-this-mode)
+      (diminish 'visual-line-mode)
+      (diminish 'org-indent-mode))
+#+END_SRC
+* done - Multiple Cursors
+#+BEGIN_SRC emacs-lisp
+  (require 'multiple-cursors)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-:") 'mc/skip-to-previous-like-this)
+
+  (global-set-key (kbd "C-.") 'mc/unmark-next-like-this)
+  (global-set-key (kbd "C-,") 'mc/unmark-previous-like-this)
+  (global-set-key (kbd "C-;") 'mc/skip-to-next-like-this)
+
+  (global-set-key (kbd "C-M-,") 'mc/mark-all-like-this)
+
+  (global-set-key (kbd "C-M-;") 'mc/insert-numbers)
+  (global-set-key (kbd "C-M-:") 'mc/insert-letters)
+  (global-set-key (kbd "C-M-<") 'mc/sort-regions)
+  (global-set-key (kbd "C-M->") 'mc/reverse-regions)
+
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
+  (define-key mc/keymap (kbd "<return>") nil)
+#+END_SRC
+* important - mark-multiple
+#+BEGIN_SRC emacs-lisp
+  (use-package mark-multiple
+    :ensure t
+    :bind ("C-c q" . 'mark-next-like-this))
+
+  (use-package expand-region
+    :ensure t
+    :bind ("C-q" . er/expand-region))
+#+END_SRC
+* incomplete - Org
+
+** done - Org-bullets
+#+BEGIN_SRC emacs-lisp
+  (use-package org-bullets
+    :ensure t
+    :config
+    (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
+#+END_SRC
+
+** Async codeblocks
+#+BEGIN_SRC emacs-lisp
+  (use-package ob-async
+    :ensure t)
+#+END_SRC
+
+** basic-config
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'org-mode-hook '(lambda () (visual-line-mode 1)))
+  (setq org-src-window-setup 'current-window)
+
+   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
+   (add-hook 'org-mode-hook 'org-display-inline-images)  
+
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((python . t)))
+
+  ;; (add-hook 'after-init-hook (lambda() (dolist (face '(hl-line))
+  ;;   (set-face-attribute face nil :extend nil))))
+  ;; (add-hook 'after-init-hook (lambda() (dolist (face '(org-block org-block-begin-line org-block-end-line))
+  ;;   (set-face-attribute face nil :extend nil :background nil))))
+#+END_SRC
+
+** org-indent
+#+BEGIN_SRC emacs-lisp
+(add-hook 'org-mode-hook 'org-indent-mode)
+#+END_SRC
+
+** Youtube exports
+#+BEGIN_SRC emacs-lisp
+  (defvar yt-iframe-format
+    ;; You may want to change your width and height.
+    (concat "<iframe width=\"440\""
+            " height=\"335\""
+            " src=\"https://www.youtube.com/embed/%s\""
+            " frameborder=\"0\""
+            " allowfullscreen>%s</iframe>"))
+
+  (org-add-link-type
+   "yt"
+   (lambda (handle)
+     (browse-url
+      (concat "https://www.youtube.com/embed/"
+              handle)))
+   (lambda (path desc backend)
+     (cl-case backend
+       (html (format yt-iframe-format
+                     path (or desc "")))
+       (latex (format "\href{%s}{%s}"
+                      path (or desc "video"))))))
+#+END_SRC
+
+** done - Org to latex blank lines
+#+BEGIN_SRC emacs-lisp
+  ;; replace \n\n with bigskip
+  (defun my-replace-double-newline (backend)
+    "replace multiple blank lines with bigskip"
+    (interactive)
+    (goto-char (point-min))
+    (while (re-search-forward "\\(^\\s-*$\\)\n\n+" nil t)
+      (replace-match "\n#+LATEX: \\par\\vspace{\\baselineskip}\\noindent\n" nil t)
+      ;;(replace-match "\n#+LATEX: \\bigskip\\noindent\n" nil t)
+      (forward-char 1)))
+
+  (add-hook 'org-export-before-processing-hook 'my-replace-double-newline)
+#+END_SRC
+
+** done - Image size
+#+BEGIN_SRC emacs-lisp
+  (setq org-image-actual-width 400)
+#+END_SRC
+* incomplete - Personal Keymaps
+#+BEGIN_SRC emacs-lisp
+  (defun org-agenda-show-agenda-and-todo (&optional arg)
+    (interactive "P")
+    (org-agenda arg "c")
+    (org-agenda-fortnight-view))
+
+  ;; set up my own map for files, folder and windows
+  (define-prefix-command 'z-map)
+  (global-set-key (kbd "C-z") 'z-map)
+  (define-key z-map (kbd "a") 'org-agenda-show-agenda-and-todo)
+  (define-key z-map (kbd "n") 'narrow-or-widen-dwim)
+  (define-key z-map (kbd "C-j") 'org-journal-new-entry) 
+  (define-key z-map (kbd "C-t") 'org-journal-today)
+  (define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file "~/.zshrc")))
+  (define-key z-map (kbd "i") (defun indexEdit() (interactive) (find-file "~/Dropbox/orgfiles/index.org")))
+  (define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file "~/.skhdrc")))
+  (define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file "~/qmk_firmware/keyboards/keebio/iris/keymaps/popoiopo/keymap.c")))
+  (define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file "~/.yabairc")))
+  (define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file "~/.qutebrowser/qutemacs.py")))
+  (define-key z-map (kbd "r") (defun bibtexEdit() (interactive) (find-file "~/Dropbox/bibliography/references.bib")))
+  (define-key z-map (kbd "b") (defun bibNotesEdit() (interactive) (find-file "~/Dropbox/bibliography/Notes.org")))
+  (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
+  (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
+  (define-key z-map (kbd "<down>") 'shrink-window)
+  (define-key z-map (kbd "<up>") 'enlarge-window)
+  (define-key z-map (kbd "C-<up>") 'buf-move-up)
+  (define-key z-map (kbd "C-<down>") 'buf-move-down)
+  (define-key z-map (kbd "C-<left>") 'buf-move-left)
+  (define-key z-map (kbd "C-<right>") 'buf-move-right)
+
+  ;; map for 
+  (define-prefix-command 'o-map)
+  (global-set-key (kbd "C-o") 'o-map)
+  ;; org-ref maps
+  (define-key o-map (kbd "i") 'org-ref-insert-cite-with-completion)
+  (define-key o-map (kbd "l") 'org-ref-helm-insert-label-link)
+  (define-key o-map (kbd "r") 'org-ref-helm-insert-ref-link)
+  ;; google maps
+  (define-key o-map (kbd "a") 'google-this-region)
+  (define-key o-map (kbd "s") 'google-this)
+  (define-key o-map (kbd "d") 'google-this-line)
+  (define-key o-map (kbd "w") 'google-this-word)
+  (define-key o-map (kbd "m") 'google-this-maps)
+
+  (setq ns-function-modifier 'hyper)
+
+  (setq user-full-name "Bas Chatel" user-mail-address "bastiaan.chatel@gmail.com")
+#+END_SRC
+* incomplete - swiper/counsel/ivy
+#+BEGIN_SRC emacs-lisp
+  ;; it looks like counsel is a requirement for swiper
+  (use-package counsel
+  :ensure t
+  )
+
+  (use-package counsel
+    :bind (("M-y" . counsel-yank-pop)
+           :map ivy-minibuffer-map
+           ("M-y" . ivy-next-line)))
+
+  (use-package swiper
+  :ensure try
+  :config
+  (progn
+  (ivy-mode 1)
+  (setq ivy-use-virtual-buffers t)
+  (global-set-key "\C-s" 'swiper)
+  (global-set-key (kbd "C-c C-r") 'ivy-resume)
+  (global-set-key (kbd "<f6>") 'ivy-resume)
+  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+  (global-set-key (kbd "<f1> l") 'counsel-load-library)
+  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+  (global-set-key (kbd "C-c g") 'counsel-git)
+  (global-set-key (kbd "C-c j") 'counsel-git-grep)
+  (global-set-key (kbd "C-c k") 'counsel-ag)
+  (global-set-key (kbd "C-x l") 'counsel-locate)
+  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+  (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
+  ))
+#+END_SRC
+* leave - ESS
+#+BEGIN_SRC emacs-lisp
+  ;; ;ess-mode configuration
+  ;; (setq ess-ask-for-ess-directory nil) 
+  ;; (setq inferior-R-program-name "/usr/local/bin/R") 
+  ;; (setq ess-local-process-name "R") 
+  ;; (setq ansi-color-for-comint-mode 'filter) 
+  ;; (setq comint-scroll-to-bottom-on-input t) 
+  ;; (setq comint-scroll-to-bottom-on-output t) 
+  ;; (setq comint-move-point-for-output t)
+  ;; (setq ess-eval-visibly-p nil)
+  ;; (require 'ess-site)
+#+END_SRC
+* leave - Spotify
+#+BEGIN_SRC emacs-lisp
+
+#+END_SRC
+* leave - zoom all
+#+BEGIN_SRC emacs-lisp
+  ;; (defadvice text-scale-increase (around all-buffers (arg) activate)
+  ;;  (dolist (buffer (buffer-list))
+  ;;    (with-current-buffer buffer
+  ;;      ad-do-it))) 
+#+END_SRC
+* leave / put in seperate file - SCL Whappbot highlighting
+#+BEGIN_SRC emacs-lisp
+  ;; Copyright © 2017, by you
+
+  ;; Author: Bas Chatel ( bastiaan.chatel@gmail.com )
+  ;; Version: 0.1
+  ;; Created: 10-08-2020
+  ;; Keywords: languages
+  ;; Homepage: http://www.magicbits.nl/scl/doku.php?id=start
+
+  ;; This file is not part of GNU Emacs.
+
+  ;;; License:
+
+  ;; You can redistribute this program and/or modify it under the terms of the GNU General Public License version 2.
+
+  ;;; Commentary:
+
+  ;; short description here
+
+  ;; full doc on how to use here
+
+  ;;; Code:
+
+  ;; create the list for font-lock.
+  ;; each category of keyword is given a particular face
+  (setq scl-font-lock-keywords
+        (let* (
+              ;; define several category of keywords
+              (x-keywords '("llAbs" "llAcos" "llAddToLandBanList" "llAddToLandPassList"))
+              (x-types '("float" "integer" "key" "list" "rotation" "string" "vector"))
+              (x-constants '("ACTIVE" "AGENT" "ALL_SIDES" "ATTACH_BACK"))
+              (x-events '("at_rot_target" "at_target" "attach"))
+              (x-functions '("ACCOUNT" "AND" "ANONYMOUS" "ANSWER" "ANSWERS" "AS" "ASK" "ASK ANSWER" "ASK ANSWERS" "ASK AUDIO" "ASK DATE" "ASK IMAGE" "ASK NUMBER" "ASK TEXT" "ASK URL" "ASK VIDEO" "AUDIO" "BLOCK" "BUTTON" "DATE" "DATE" "DAYS" "DELETE" "DRAW" "ELSE" "ELSE IF" "FETCH" "FILE" "FIND" "FLAT" "GET" "GLOBAL" "GRAPH" "GRAYLOG" "GROUP" "HOURS" "ID" "IF" "IMAGE" "INDEX" "INSERT" "IP" "JOIN" "KEYS" "LATEST" "LENGTH" "LISTEN" "LOGIN" "LOGOUT" "LOWER" "MAP" "MATCH" "MAX" "MEAN" "MFA" "MIN" "MINUTES" "NAME" "NOT" "NOW" "NULL" "NUMBER" "OR" "OS" "PAINT" "PARSE" "POST" "PUT" "READ" "RECAPTCHA" "SECONDS" "SEND" "SET" "SHOW" "SORT" "SUM" "SWITCH" "TEXT" "THIS" "TODAY" "UID" "UPPER" "URL" "VIDEO" "WATCH" "WHERE" "WHILE" "start"))
+
+
+
+              ;; generate regex string for each category of keywords
+              (x-keywords-regexp (regexp-opt x-keywords 'words))
+              (x-types-regexp (regexp-opt x-types 'words))
+              (x-constants-regexp (regexp-opt x-constants 'words))
+              (x-events-regexp (regexp-opt x-events 'words))
+              (x-functions-regexp (regexp-opt x-functions 'words)))
+
+          `(
+            (,x-types-regexp . font-lock-type-face)
+            (,x-constants-regexp . font-lock-constant-face)
+            (,x-events-regexp . font-lock-builtin-face)
+            (,x-functions-regexp . font-lock-function-name-face)
+            (,x-keywords-regexp . font-lock-keyword-face)
+            ;; note: order above matters, because once colored, that part won't change.
+            ;; in general, put longer words first
+            )))
+
+  ;;;###autoload
+  (define-derived-mode scl-mode c-mode "scl mode"
+    "Major mode for editing scl (Structured Conversion Language)…"
+
+    ;; code for syntax highlighting
+    (setq font-lock-defaults '((scl-font-lock-keywords))))
+
+  ;; add the mode to the `features' list
+  (provide 'scl-mode)
+#+END_SRC
+* todo - All things blog publishing
 ** Some setup
 This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blogging_for_fun_and_profit.html][loomcom]].
 #+BEGIN_SRC emacs-lisp
@@ -117,148 +908,14 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
 #+BEGIN_SRC emacs-lisp
   (require 'ox-twbs)
 #+END_SRC
-* auto completion
+* todo - auto completion
 #+BEGIN_SRC emacs-lisp
   (use-package company
     :ensure t
     :init
     (add-hook 'after-init-hook 'global-company-mode))
 #+END_SRC
-* avy
-#+BEGIN_SRC emacs-lisp
-  (use-package avy
-    :ensure t
-    :bind
-    ("M-s" . avy-goto-char))
-#+END_SRC
-* Backup files
-#+BEGIN_SRC emacs-lisp
-  (setq version-control t     ;; Use version numbers for backups.
-        kept-new-versions 10  ;; Number of newest versions to keep.
-        kept-old-versions 0   ;; Number of oldest versions to keep.
-        delete-old-versions t ;; Don't ask to delete excess backup versions.
-        backup-by-copying t  ;; Copy all files, don't rename them.
-        auto-save-interval 100 ;; Change interval of characters to which auto-save is enabled
-        )
-
-  (setq vc-make-backup-files t)
-
-  ;; Default and per-save backups go here:
-  (setq backup-directory-alist '(("" . "~/.emacs.d/backup/per-save")))
-
-  (defun force-backup-of-buffer ()
-    ;; Make a special "per session" backup at the first save of each
-    ;; emacs session.
-    (when (not buffer-backed-up)
-      ;; Override the default parameters for per-session backups.
-      (let ((backup-directory-alist '(("" . "~/.emacs.d/backup/per-session")))
-            (kept-new-versions 3))
-        (backup-buffer)))
-    ;; Make a "per save" backup on each save.  The first save results in
-    ;; both a per-session and a per-save backup, to keep the numbering
-    ;; of per-save backups consistent.
-    (let ((buffer-backed-up nil))
-      (backup-buffer)))
-
-  (add-hook 'before-save-hook  'force-backup-of-buffer)
-#+END_SRC
-* Basic improvements
-** Basics
-#+BEGIN_SRC emacs-lisp
-  (setq scroll-conservatively 100)    ;; Keep from making huge jumps
-  (setq ring-bell-function 'ignore)   ;; Unable annoying sounds
-  (setq visible-bell 1)               ;; disable annoying windows sound
-  (setq inhibit-startup-message t)    ;; Hide the startup message
-  (global-set-key (kbd "<f5>") 'revert-buffer)
-  (setq-default display-line-numbers 'relative)
-  (global-auto-revert-mode t)
-  (delete-selection-mode 1)
-  (use-package try
-    :ensure t)
-  (use-package page-break-lines
-    :ensure t
-    :init
-    (turn-on-page-break-lines-mode))
-  (setq electric-pair-pairs '(
-                              (?\( . ?\))
-                              (?\[ . ?\])
-                              (?\" . ?\")
-                              (?\{ . ?\})
-                              ))
-  (electric-pair-mode t)
-
-  (tool-bar-mode -1)                  ;; Get rid of tool-bar
-  (menu-bar-mode -1)                  ;; Git rid of menu
-  (scroll-bar-mode -1)                ;; Get rid of scroll-bar
-
-  (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
-
-  (when window-system (global-hl-line-mode t))            ;; Get a current line shadow in IDE
-
-  (use-package beacon
-    :ensure t
-    :init
-    (beacon-mode 1))                  ;; Enable small light to show where current frame is
-
-  (use-package which-key
-    :ensure t
-    :init
-    (which-key-mode))                 ;; Upon C-x get a list of possible options
-
-  (setq save-interprogram-paste-before-kill t) ;; perpetuates system clipboard
-  #+END_SRC
-
-** subword
-#+BEGIN_SRC emacs-lisp
-(global-subword-mode 1)
-#+END_SRC
-
-** clock
-Hier wordt de klok geinitieerd
-#+BEGIN_SRC emacs-lisp
-  (setq display-time-24hr-format t)
-  (display-time-mode 1)
-#+END_SRC
-
-** popup kill-ring
-#+BEGIN_SRC emacs-lisp
-  (use-package popup-kill-ring
-    :ensure t
-    :bind ("M-y" . popup-kill-ring))
-#+END_SRC
-* Buffer-move
-#+BEGIN_SRC emacs-lisp
-(use-package buffer-move
-  :ensure t)
-#+END_SRC
-* Buffers
-
-** enable ibuffer
-#+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-x b") 'ibuffer)
-#+END_SRC
-
-** expert
-#+BEGIN_SRC emacs-lisp
-  (setq ibuffer-expert t)
-#+END_SRC
-
-** allways kill current buffer
-#+BEGIN_SRC emacs-lisp
-  (defun kill-curr-buffer ()
-    (interactive)
-    (kill-buffer (current-buffer)))
-  (global-set-key (kbd "C-x k") 'kill-curr-buffer)
-#+END_SRC
-
-** kill all buffers
-#+BEGIN_SRC emacs-lisp
-  (defun kill-all-buffers ()
-    (interactive)
-    (mapc 'kill-buffer (buffer-list)))
-  (global-set-key (kbd "C-M-s-k") 'kill-all-buffers)
-#+END_SRC
-* Company org roam
+* todo - Company org roam
 Autocomplete backrefs
 #+BEGIN_SRC emacs-lisp
   (use-package company-org-roam
@@ -268,24 +925,7 @@ Autocomplete backrefs
     :config
     (push 'company-org-roam company-backends))
 #+END_SRC
-* config edit/reload
-
-** edit
-#+BEGIN_SRC emacs-lisp
-  (defun config-visit ()
-    (interactive)
-    (find-file "~/.emacs.d/config.org"))
-  (global-set-key (kbd "C-c e") 'config-visit)
-#+END_SRC
-
-** reload
-#+BEGIN_SRC emacs-lisp
-  (defun config-reload ()
-    (interactive)
-    (org-babel-load-file (expand-file-name "~/.emacs.d/config.org")))
-  (global-set-key (kbd "C-c r") 'config-reload)
-#+END_SRC
-* Convenient function
+* todo - Convenient function
 
 ** kill-whole-word
 #+BEGIN_SRC emacs-lisp
@@ -307,7 +947,7 @@ Autocomplete backrefs
 	(point-at-eol)))))
   (global-set-key (kbd "C-c w l") 'copy-whole-line)
 #+END_SRC
-* Dashboard
+* todo - Dashboard
 #+BEGIN_SRC emacs-lisp
   (use-package dashboard
     :ensure t
@@ -323,7 +963,7 @@ Autocomplete backrefs
   (setq dashboard-set-navigator t)
   (setq show-week-agenda-p t)
 #+END_SRC
-* DEFT
+* todo - DEFT
 #+BEGIN_SRC emacs-lisp
   (use-package deft
         :after org
@@ -335,61 +975,61 @@ Autocomplete backrefs
         (deft-default-extension "org")
         (deft-directory "~/Dropbox/RoamNotes/"))
 #+END_SRC
-* dmenu
+* todo - dmenu
 #+BEGIN_SRC emacs-lisp
   (use-package dmenu
     :ensure t
     :bind
     ("s-SPC" . 'dmenu))
 #+END_SRC
-* DOT
+* todo - DOT
 #+BEGIN_SRC emacs-lisp
   (org-babel-do-load-languages
    'org-babel-load-languages
    '((dot . t))) ; this line activates dot
 #+END_SRC
-* ESS
+* todo - Elgantt
 #+BEGIN_SRC emacs-lisp
-  ;; ;ess-mode configuration
-  ;; (setq ess-ask-for-ess-directory nil) 
-  ;; (setq inferior-R-program-name "/usr/local/bin/R") 
-  ;; (setq ess-local-process-name "R") 
-  ;; (setq ansi-color-for-comint-mode 'filter) 
-  ;; (setq comint-scroll-to-bottom-on-input t) 
-  ;; (setq comint-scroll-to-bottom-on-output t) 
-  ;; (setq comint-move-point-for-output t)
-  ;; (setq ess-eval-visibly-p nil)
-  ;; (require 'ess-site)
-#+END_SRC
-* Export to word
-#+BEGIN_SRC emacs-lisp
-  ;; This setup is tested on Emacs 24.3 & Emacs 24.4 on Linux/OSX
-  ;; org v7 bundled with Emacs 24.3
-  (setq org-export-odt-preferred-output-format "doc")
-  ;; org v8 bundled with Emacs 24.4
-  (setq org-odt-preferred-output-format "doc")
-  ;; BTW, you can assign "pdf" in above variables if you prefer PDF format
+  (add-to-list 'load-path (concat user-emacs-directory "lisp/elgantt/")) ;; Or wherever it is located
+  (setq elgantt-agenda-files (concat user-emacs-directory "lisp/elgantt/test.org"))
+  (require 'elgantt)
 
-  ;; Only OSX need below setup
-  (defun my-setup-odt-org-convert-process ()
-    (interactive)
-    (let ((cmd "/Applications/LibreOffice.app/Contents/MacOS/soffice"))
-      (when (and (eq system-type 'darwin) (file-exists-p cmd))
-        ;; org v7
-        (setq org-export-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")))
-        ;; org v8
-        (setq org-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
-      ))
-  (my-setup-odt-org-convert-process)
+  ;; colorizing outline
+  (setq elgantt-user-set-color-priority-counter 0)
+  (elgantt-create-display-rule draw-scheduled-to-deadline
+    :parser ((elgantt-color . ((when-let ((colors (org-entry-get (point) "ELGANTT-COLOR")))
+                                 (s-split " " colors)))))
+    :args (elgantt-scheduled elgantt-color elgantt-org-id)
+    :body ((when elgantt-scheduled
+             (let ((point1 (point))
+                   (point2 (save-excursion
+                             (elgantt--goto-date elgantt-scheduled)
+                             (point)))
+                   (color1 (or (car elgantt-color)
+                               "black"))
+                   (color2 (or (cadr elgantt-color)
+                               "red")))
+               (when (/= point1 point2)
+                 (elgantt--draw-gradient 
+                  color1
+                  color2
+                  (if (< point1 point2) point1 point2) ;; Since cells are not necessarily linked in 
+                  (if (< point1 point2) point2 point1) ;; chronological order, make sure they are sorted
+                  nil
+                  `(priority ,(setq elgantt-user-set-color-priority-counter
+                                    (1- elgantt-user-set-color-priority-counter))
+                             ;; Decrease the priority so that earlier entries take
+                             ;; precedence over later ones (note: it doesn’t matter if the number is negative)
+                             :elgantt-user-overlay ,elgantt-org-id)))))))
+
+  ;; settings
+  (setq elgantt-header-type 'outline
+        elgantt-insert-blank-line-between-top-level-header t
+        elgantt-startup-folded nil
+        elgantt-show-header-depth t
+        elgantt-draw-overarching-headers t)
 #+END_SRC
-* Flycheck
-#+BEGIN_SRC emacs-lisp
-  ;; (use-package flycheck
-  ;;   :ensure t
-  ;;   :init
-  ;;   (global-flycheck-mode t))
-#+END_SRC
-* Google Calendar
+* todo - Google Calendar
 #+BEGIN_SRC emacs-lisp
   (setq package-check-signature nil)
 
@@ -416,27 +1056,16 @@ Autocomplete backrefs
   ;;            ((agenda "")
   ;;             (alltodo "")))))
 #+END_SRC
-* Google-this
+* todo - Google-this
 #+BEGIN_SRC emacs-lisp
 (google-this-mode 1)
 #+END_SRC
-* Hungry-delete
-#+BEGIN_SRC emacs-lisp
-  (use-package hungry-delete
-    :ensure t
-    :config (global-hungry-delete-mode))
-#+END_SRC
-* Hydra
-
-#+BEGIN_SRC emacs-lisp
-
-#+END_SRC 
-* IDO
+* todo - IDO
 
 ** enable ido mode
 
 #+BEGIN_SRC emacs-lisp
-(setq ido-enable-flex-matching nil)
+(setq ido-enable-flex-matching t)
 (setq ido-create-new-buffer 'always)
 (setq ido-everywhere t)
 (ido-mode 1)
@@ -465,7 +1094,7 @@ mx ido emulator
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-x C-b") 'ido-switch-buffer)
 #+END_SRC
-* Latex Setup
+* todo - Latex Setup
 #+BEGIN_SRC emacs-lisp
   (setq org-latex-prefer-user-labels t)
   (setenv "PATH" "/usr/local/bin:/Library/TeX/texbin/:$PATH" t)
@@ -533,110 +1162,18 @@ mx ido emulator
                  ("\\paragraph{%s}" . "\\paragraph*{%s}"))
   )
 #+END_SRC
-* Link to org section
-#+BEGIN_SRC emacs-lisp
-(global-set-key (kbd "C-c l") 'org-store-link)
-(global-set-key (kbd "C-c C-l") 'org-insert-link)
-#+END_SRC
-* Mac-specific
+* todo - Mac-specific
 #+BEGIN_SRC emacs-lisp
   (setq mac-option-key-is-meta t
         mac-comand-modifier 'super
   )
 #+END_SRC
-* Magit
+* todo - Magit
 #+BEGIN_SRC emacs-lisp
   (require 'magit)
   (global-set-key (kbd "C-x g") 'magit-status)
 #+END_SRC
-* mark-multiple
-#+BEGIN_SRC emacs-lisp
-  (use-package mark-multiple
-    :ensure t
-    :bind ("C-c q" . 'mark-next-like-this))
-
-  (use-package expand-region
-    :ensure t
-    :bind ("C-q" . er/expand-region))
-#+END_SRC
-* modeline
-
-** spaceline
-#+BEGIN_SRC emacs-lisp
-  (use-package spaceline
-    :ensure t
-    :config
-    (require 'spaceline-config)
-    (setq powerline-default-separator (quote arrow))
-    (spaceline-spacemacs-theme))
-#+END_SRC
-
-** diminish
-#+BEGIN_SRC emacs-lisp
-    (use-package diminish
-      :ensure t
-      :init
-      (diminish 'hungry-delete-mode)
-      (diminish 'beacon-mode)
-      (diminish 'which-key-mode)
-      (diminish 'subword-mode)
-      (diminish 'rainbow-mode)
-      (diminish 'google-this-mode)
-      (diminish 'visual-line-mode)
-      (diminish 'org-indent-mode))
-#+END_SRC
-* Multiple Cursors
-#+BEGIN_SRC emacs-lisp
-  (require 'multiple-cursors)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-:") 'mc/skip-to-previous-like-this)
-
-  (global-set-key (kbd "C-.") 'mc/unmark-next-like-this)
-  (global-set-key (kbd "C-,") 'mc/unmark-previous-like-this)
-  (global-set-key (kbd "C-;") 'mc/skip-to-next-like-this)
-
-  (global-set-key (kbd "C-M-,") 'mc/mark-all-like-this)
-
-  (global-set-key (kbd "C-M-;") 'mc/insert-numbers)
-  (global-set-key (kbd "C-M-:") 'mc/insert-letters)
-  (global-set-key (kbd "C-M-<") 'mc/sort-regions)
-  (global-set-key (kbd "C-M->") 'mc/reverse-regions)
-
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
-  (define-key mc/keymap (kbd "<return>") nil)
-#+END_SRC
-* Narrowing
-#+BEGIN_SRC emacs-lisp
-  (defun narrow-or-widen-dwim (p)
-    "Widen if buffer is narrowed, narrow-dwim otherwise.
-  Dwim means: region, org-src-block, org-subtree, or
-  defun, whichever applies first. Narrowing to
-  org-src-block actually calls `org-edit-src-code'.
-
-  With prefix P, don't widen, just narrow even if buffer
-  is already narrowed."
-    (interactive "P")
-    (declare (interactive-only))
-    (cond ((and (buffer-narrowed-p) (not p)) (widen))
-          ((region-active-p)
-           (narrow-to-region (region-beginning)
-                             (region-end)))
-          ((derived-mode-p 'org-mode)
-           ;; `org-edit-src-code' is not a real narrowing
-           ;; command. Remove this first conditional if
-           ;; you don't want it.
-           (cond ((ignore-errors (org-edit-src-code) t)
-                  (delete-other-windows))
-                 ((ignore-errors (org-narrow-to-block) t))
-                 (t (org-narrow-to-subtree))))
-          ((derived-mode-p 'latex-mode)
-           (LaTeX-narrow-to-environment))
-          (t (narrow-to-defun))))
-
-#+END_SRC
-* New EWW buffer
+* todo - New EWW buffer
 
 #+BEGIN_SRC emacs-lisp
 ;; Auto-rename new eww buffers
@@ -645,219 +1182,7 @@ mx ido emulator
   (rename-buffer "eww" t))
 (add-hook 'eww-mode-hook #'xah-rename-eww-hook)
 #+END_SRC
-* Org
-
-** Org-bullets
-#+BEGIN_SRC emacs-lisp
-  (use-package org-bullets
-    :ensure t
-    :config
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
-#+END_SRC
-
-** Async codeblocks
-#+BEGIN_SRC emacs-lisp
-  (use-package ob-async
-    :ensure t)
-#+END_SRC
-
-** basic-config
-#+BEGIN_SRC emacs-lisp
-  (add-hook 'org-mode-hook '(lambda () (visual-line-mode 1)))
-  (setq org-src-window-setup 'current-window)
-
-   (add-hook 'org-babel-after-execute-hook 'org-display-inline-images)   
-   (add-hook 'org-mode-hook 'org-display-inline-images)  
-
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((python . t)))
-
-  ;; (add-hook 'after-init-hook (lambda() (dolist (face '(hl-line))
-  ;;   (set-face-attribute face nil :extend nil))))
-  ;; (add-hook 'after-init-hook (lambda() (dolist (face '(org-block org-block-begin-line org-block-end-line))
-  ;;   (set-face-attribute face nil :extend nil :background nil))))
-#+END_SRC
-
-** org-indent
-#+BEGIN_SRC emacs-lisp
-(add-hook 'org-mode-hook 'org-indent-mode)
-#+END_SRC
-
-** Youtube exports
-#+BEGIN_SRC emacs-lisp
-  (defvar yt-iframe-format
-    ;; You may want to change your width and height.
-    (concat "<iframe width=\"440\""
-            " height=\"335\""
-            " src=\"https://www.youtube.com/embed/%s\""
-            " frameborder=\"0\""
-            " allowfullscreen>%s</iframe>"))
-
-  (org-add-link-type
-   "yt"
-   (lambda (handle)
-     (browse-url
-      (concat "https://www.youtube.com/embed/"
-              handle)))
-   (lambda (path desc backend)
-     (cl-case backend
-       (html (format yt-iframe-format
-                     path (or desc "")))
-       (latex (format "\href{%s}{%s}"
-                      path (or desc "video"))))))
-#+END_SRC
-
-** Org to latex blank lines
-#+BEGIN_SRC emacs-lisp
-  ;; replace \n\n with bigskip
-  (defun my-replace-double-newline (backend)
-    "replace multiple blank lines with bigskip"
-    (interactive)
-    (goto-char (point-min))
-    (while (re-search-forward "\\(^\\s-*$\\)\n\n+" nil t)
-      (replace-match "\n#+LATEX: \\par\\vspace{\\baselineskip}\\noindent\n" nil t)
-      ;;(replace-match "\n#+LATEX: \\bigskip\\noindent\n" nil t)
-      (forward-char 1)))
-
-  (add-hook 'org-export-before-processing-hook 'my-replace-double-newline)
-#+END_SRC
-
-** Image size
-#+BEGIN_SRC emacs-lisp
-  (setq org-image-actual-width 400)
-#+END_SRC
-* Org Capture
-#+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "C-c c")
-                  'org-capture)
-
-  (setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
-                                   "* Day journal\n** %(format-time-string org-journal-time-format)%?")))
-
-  ;; (setq org-capture-templates
-  ;;       '(("a" "Appointment" entry (file+headline  "~/Dropbox/orgfiles/gcal.org" "Appointments")
-  ;;          "* %?\n:PROPERTIES:\n:calendar-id: bastiaan.chatel@gmail.com\n:LOCATION:\n:END:\n:org-gcal:\n%^T\nNOTES:\n:END:\n")
-  ;;         ("n" "Note" entry (file+headline "~/Dropbox/orgfiles/index.org" "Notes")
-  ;;          "* %?\n%u" :prepend t)
-  ;;         ("m" "Meeting Notes and Questions" entry (file+headline "~/Dropbox/orgfiles/index.org" "Meeting Notes and Questions")
-  ;;          "* %? %u\n" :prepend t)
-  ;;         ("l" "Link" entry (file+headline "~/Dropbox/orgfiles/index.org" "Links")
-  ;;          "* %? %^L %^g \n%T" :prepend t)
-  ;;         ("t" "To Do Item" entry (file+headline "~/Dropbox/orgfiles/index.org" "To Do Items")
-  ;;          "* TODO [#%?] \n:PROPERTIES:\nTIME_STAMP: %u\nSCHEDULED: \n:END:\n:NOTES:\n\n\n:END:\n" :prepend t)))
-#+END_SRC
-* Org Journal
-#+BEGIN_SRC emacs-lisp
-  (use-package org-journal
-    :ensure t
-    :defer t
-    :config
-    (setq org-journal-dir "~/Dropbox/RoamNotes/org-journal/"
-          org-journal-enable-agenda-integration t
-          org-journal-date-prefix "#+TITLE: "
-          org-journal-file-format "%Y-%m-%d.org"
-          org-journal-date-format "%A, %d %B %Y"))
-
-  (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"WAITING\"|TODO=\"FLEETING\"|TODO=\"LONGTERM\"")
-
-  (defun org-journal-file-header-func (time)
-    "Custom function to create journal header."
-    (concat
-      (pcase org-journal-file-type
-        (`daily (concat "#+TITLE: " (format-time-string org-journal-date-format time) "\n#+STARTUP: folded\n* Tags and resources\n- tags :: \n- resources ::\n* TODOS\n")))))
-
-  (setq org-journal-file-header 'org-journal-file-header-func)
-
-  (require 'org-journal)
-
-  (defun org-journal-find-location ()
-    ;; Open today's journal, but specify a non-nil prefix argument in order to
-    ;; inhibit inserting the heading; org-capture will insert the heading.
-    (org-journal-new-entry t)
-    ;; Position point on the journal's top-level heading so that org-capture
-    ;; will add the new entry as a child entry.
-    (goto-char (point-min)))
-
-  (defun org-journal-save-entry-and-exit()
-    "Simple convenience function.
-    Saves the buffer of the current day's entry and kills the window
-    Similar to org-capture like behavior"
-    (interactive)
-    (save-buffer)
-    (kill-buffer-and-window))
-  (define-key org-journal-mode-map (kbd "C-x C-s") 'org-journal-save-entry-and-exit)
-
-  (defun org-journal-today ()
-      (interactive)
-      (org-journal-new-entry t))
-#+END_SRC
-* Org roam
-#+BEGIN_SRC emacs-lisp
-  (use-package org-roam
-        :ensure t
-        :hook
-        (after-init . org-roam-mode)
-        :custom
-        (org-roam-directory "~/Dropbox/RoamNotes/")
-        (org-roam-db-location "/Users/chatel/org-roam.db")
-        :bind (:map org-roam-mode-map
-                (("C-c n l" . org-roam)
-                 ("C-c n f" . orb-find-non-ref-file)
-                 ("C-c n g" . org-roam-graph-show))
-                :map org-mode-map
-                (("C-c n i" . orb-insert-non-ref))
-                (("C-c n I" . org-roam-insert-immediate))))
-
-  (setq org-roam-capture-templates
-        '(
-          ;; Alle informatie met referenties naar waar ik het vandaan heb. Dit wordt het grootste deel die concepten uitlegt met referenties naar snippets.
-          ("k" "Knowledge base" plain (function org-roam--capture-get-point)
-          "%?"
-          :file-name "knowledge_base/%<%Y%m%d%H%M%S>-${slug}"
-          :head "#+title: ${title}\n\n- tags :: [[file:20200729175519-knowledge_base.org][Knowledge base]]\n\n* "
-          :unnarrowed t)
-
-          ;; Hier staat alle informatie over mensen die ik ken; waar ik ze van ken, waar ze goed in zijn, verjaardag, etc. Dit functioneert als basis waar ik naar kan refereren als ik hulp nodig heb van iemand en ook voor leuk dat ik kan terug zien wat ik met die persoon heb gedaan vanuit de org-journal folder.
-          ("p" "Personal" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "personal/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags ::  [[file:20200729175551-personal.org][personal]]\n- birthday :: \n- Contact\n  - Phonenumber :: \n  - Email :: \n\n* "
-            :unnarrowed t)
-
-          ;; Hier komen alle interessante ideeën die niet perse met literatuur versterkt worden, niet goed uitgewerkt zijn of simpelweg een interessante notion is waar ik later iets mee kan.
-          ("i" "Ideas" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "ideas/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200729175615-ideas.org][Ideas]]\n\n* "
-            :unnarrowed t)
-
-          ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
-          ("a" "Papers and Articles" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "papers_and_articles/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200729175758-papers_and_articles.org][papers_and_articles]]\n\n* "
-            :unnarrowed t)
-
-          ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
-          ("w" "Work" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "work/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200902142233-work.org][work]]\n\n* "
-            :unnarrowed t)
-
-          ;; Hier staan, labelled per programmeer taal en functie (optimization, plotting, etc.), de snippets voor bepaalde methodes, wiskundige formules die uitgeprogrammeerd zijn etc.
-          ("s" "Snippets" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "snippets/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200729175823-snippets.org][snippets]]\n\n* "
-            :unnarrowed t)
-          )
-        )
-
-  (setq org-roam-tag-sources '(prop last-directory))
-#+END_SRC
-* Org-pomodoro
+* todo - Org-pomodoro
 #+BEGIN_SRC emacs-lisp
 (use-package org-pomodoro
   :ensure t
@@ -871,7 +1196,7 @@ mx ido emulator
 (setq org-pomodoro-play-sounds 1)
 (setq org-pomodoro-ask-upon-killing 1)
 #+END_SRC
-* Org-ref
+* todo - Org-ref
 #+BEGIN_SRC emacs-lisp
   (require 'org-ref)
 
@@ -916,7 +1241,7 @@ mx ido emulator
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.5))
 
 #+END_SRC
-* Org-roam-bibtex
+* todo - Org-roam-bibtex
 #+BEGIN_SRC emacs-lisp
   ;; If you installed via MELPA
   (use-package org-roam-bibtex
@@ -943,7 +1268,7 @@ mx ido emulator
                    "  :END:\n")"#+title: ${title}\n#+ROAM_KEY: ${ref}* "
            :unnarrowed t)))
 #+END_SRC
-* Org-roam-server
+* todo - Org-roam-server
 #+BEGIN_SRC emacs-lisp
   ;; (require 'org-roam-protocol)
 
@@ -960,7 +1285,7 @@ mx ido emulator
   ;;         org-roam-server-network-label-truncate-length 60
   ;;         org-roam-server-network-label-wrap-length 20))
 #+END_SRC
-* pdf-tools
+* todo - pdf-tools
 #+BEGIN_SRC emacs-lisp
   (use-package pdf-tools
    :pin manual ;; manually update
@@ -980,56 +1305,7 @@ mx ido emulator
    ("d"  . pdf-annot-delete)))
 
 #+END_SRC
-* Personal Keymaps
-#+BEGIN_SRC emacs-lisp
-  (defun org-agenda-show-agenda-and-todo (&optional arg)
-    (interactive "P")
-    (org-agenda arg "c")
-    (org-agenda-fortnight-view))
-
-  ;; set up my own map for files, folder and windows
-  (define-prefix-command 'z-map)
-  (global-set-key (kbd "C-z") 'z-map)
-  (define-key z-map (kbd "a") 'org-agenda-show-agenda-and-todo)
-  (define-key z-map (kbd "n") 'narrow-or-widen-dwim)
-  (define-key z-map (kbd "C-j") 'org-journal-new-entry) 
-  (define-key z-map (kbd "C-t") 'org-journal-today)
-  (define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file "~/.zshrc")))
-  (define-key z-map (kbd "i") (defun indexEdit() (interactive) (find-file "~/Dropbox/orgfiles/index.org")))
-  (define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file "~/.skhdrc")))
-  (define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file "~/qmk_firmware/keyboards/keebio/iris/keymaps/popoiopo/keymap.c")))
-  (define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file "~/.yabairc")))
-  (define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file "~/.qutebrowser/qutemacs.py")))
-  (define-key z-map (kbd "r") (defun bibtexEdit() (interactive) (find-file "~/Dropbox/bibliography/references.bib")))
-  (define-key z-map (kbd "b") (defun bibNotesEdit() (interactive) (find-file "~/Dropbox/bibliography/Notes.org")))
-  (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
-  (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
-  (define-key z-map (kbd "<down>") 'shrink-window)
-  (define-key z-map (kbd "<up>") 'enlarge-window)
-  (define-key z-map (kbd "C-<up>") 'buf-move-up)
-  (define-key z-map (kbd "C-<down>") 'buf-move-down)
-  (define-key z-map (kbd "C-<left>") 'buf-move-left)
-  (define-key z-map (kbd "C-<right>") 'buf-move-right)
-
-  ;; map for 
-  (define-prefix-command 'o-map)
-  (global-set-key (kbd "C-o") 'o-map)
-  ;; org-ref maps
-  (define-key o-map (kbd "i") 'org-ref-insert-cite-with-completion)
-  (define-key o-map (kbd "l") 'org-ref-helm-insert-label-link)
-  (define-key o-map (kbd "r") 'org-ref-helm-insert-ref-link)
-  ;; google maps
-  (define-key o-map (kbd "a") 'google-this-region)
-  (define-key o-map (kbd "s") 'google-this)
-  (define-key o-map (kbd "d") 'google-this-line)
-  (define-key o-map (kbd "w") 'google-this-word)
-  (define-key o-map (kbd "m") 'google-this-maps)
-
-  (setq ns-function-modifier 'hyper)
-
-  (setq user-full-name "Bas Chatel" user-mail-address "bastiaan.chatel@gmail.com")
-#+END_SRC
-* Projectile
+* todo - Projectile
 #+BEGIN_SRC emacs-lisp
   ;; (use-package projectile
   ;; :ensure t
@@ -1051,7 +1327,7 @@ mx ido emulator
     :config (setq dumb-jump-selector 'ivy)
     :ensure)
 #+END_SRC
-* Python
+* todo - Python
 
 #+BEGIN_SRC emacs-lisp
   (eval-after-load "company"
@@ -1061,94 +1337,7 @@ mx ido emulator
                                 (require 'sphinx-doc)
                                 (sphinx-doc-mode t)))
 #+END_SRC
-* rainbow
-#+BEGIN_SRC emacs-lisp
-  (use-package rainbow-mode
-    :ensure t
-    :init (add-hook 'prog-mode-hook 'rainbow-mode))
-#+END_SRC
-#+BEGIN_SRC emacs-lisp
-  (use-package rainbow-delimiters
-    :ensure t
-    :init
-    (rainbow-delimiters-mode 1))
-#+END_SRC
-* Reveal.js
-#+BEGIN_SRC emacs-lisp
-(use-package ox-reveal
-:ensure ox-reveal)
-
-(setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
-(setq org-reveal-mathjax t)
-
-(use-package htmlize
-:ensure t)
-#+END_SRC
-* SCL Whappbot highlighting
-#+BEGIN_SRC emacs-lisp
-  ;; Copyright © 2017, by you
-
-  ;; Author: Bas Chatel ( bastiaan.chatel@gmail.com )
-  ;; Version: 0.1
-  ;; Created: 10-08-2020
-  ;; Keywords: languages
-  ;; Homepage: http://www.magicbits.nl/scl/doku.php?id=start
-
-  ;; This file is not part of GNU Emacs.
-
-  ;;; License:
-
-  ;; You can redistribute this program and/or modify it under the terms of the GNU General Public License version 2.
-
-  ;;; Commentary:
-
-  ;; short description here
-
-  ;; full doc on how to use here
-
-  ;;; Code:
-
-  ;; create the list for font-lock.
-  ;; each category of keyword is given a particular face
-  (setq scl-font-lock-keywords
-        (let* (
-              ;; define several category of keywords
-              (x-keywords '("llAbs" "llAcos" "llAddToLandBanList" "llAddToLandPassList"))
-              (x-types '("float" "integer" "key" "list" "rotation" "string" "vector"))
-              (x-constants '("ACTIVE" "AGENT" "ALL_SIDES" "ATTACH_BACK"))
-              (x-events '("at_rot_target" "at_target" "attach"))
-              (x-functions '("ACCOUNT" "AND" "ANONYMOUS" "ANSWER" "ANSWERS" "AS" "ASK" "ASK ANSWER" "ASK ANSWERS" "ASK AUDIO" "ASK DATE" "ASK IMAGE" "ASK NUMBER" "ASK TEXT" "ASK URL" "ASK VIDEO" "AUDIO" "BLOCK" "BUTTON" "DATE" "DATE" "DAYS" "DELETE" "DRAW" "ELSE" "ELSE IF" "FETCH" "FILE" "FIND" "FLAT" "GET" "GLOBAL" "GRAPH" "GRAYLOG" "GROUP" "HOURS" "ID" "IF" "IMAGE" "INDEX" "INSERT" "IP" "JOIN" "KEYS" "LATEST" "LENGTH" "LISTEN" "LOGIN" "LOGOUT" "LOWER" "MAP" "MATCH" "MAX" "MEAN" "MFA" "MIN" "MINUTES" "NAME" "NOT" "NOW" "NULL" "NUMBER" "OR" "OS" "PAINT" "PARSE" "POST" "PUT" "READ" "RECAPTCHA" "SECONDS" "SEND" "SET" "SHOW" "SORT" "SUM" "SWITCH" "TEXT" "THIS" "TODAY" "UID" "UPPER" "URL" "VIDEO" "WATCH" "WHERE" "WHILE" "start"))
-
-
-
-              ;; generate regex string for each category of keywords
-              (x-keywords-regexp (regexp-opt x-keywords 'words))
-              (x-types-regexp (regexp-opt x-types 'words))
-              (x-constants-regexp (regexp-opt x-constants 'words))
-              (x-events-regexp (regexp-opt x-events 'words))
-              (x-functions-regexp (regexp-opt x-functions 'words)))
-
-          `(
-            (,x-types-regexp . font-lock-type-face)
-            (,x-constants-regexp . font-lock-constant-face)
-            (,x-events-regexp . font-lock-builtin-face)
-            (,x-functions-regexp . font-lock-function-name-face)
-            (,x-keywords-regexp . font-lock-keyword-face)
-            ;; note: order above matters, because once colored, that part won't change.
-            ;; in general, put longer words first
-            )))
-
-  ;;;###autoload
-  (define-derived-mode scl-mode c-mode "scl mode"
-    "Major mode for editing scl (Structured Conversion Language)…"
-
-    ;; code for syntax highlighting
-    (setq font-lock-defaults '((scl-font-lock-keywords))))
-
-  ;; add the mode to the `features' list
-  (provide 'scl-mode)
-#+END_SRC
-* Spell checking
+* todo - Spell checking
 #+BEGIN_SRC emacs-lisp
   ;; (dolist (hook '(text-mode-hook))
   ;;   (add-hook hook (lambda () (flyspell-mode 1))))
@@ -1203,11 +1392,7 @@ mx ido emulator
 
   ;; (advice-add 'ispell-pdict-save :after #'flyspell-buffer-after-pdict-save)
 #+END_SRC
-* Spotify
-#+BEGIN_SRC emacs-lisp
-
-#+END_SRC
-* Straight
+* todo - Straight
 Downloads packages by cloning from github
 #+BEGIN_SRC emacs-lisp
   (defvar bootstrap-version)
@@ -1223,122 +1408,7 @@ Downloads packages by cloning from github
         (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
 #+END_SRC
-* swiper/counsel/ivy
-#+BEGIN_SRC emacs-lisp
-  ;; it looks like counsel is a requirement for swiper
-  (use-package counsel
-  :ensure t
-  )
-
-  (use-package counsel
-    :bind (("M-y" . counsel-yank-pop)
-           :map ivy-minibuffer-map
-           ("M-y" . ivy-next-line)))
-
-  (use-package swiper
-  :ensure try
-  :config
-  (progn
-  (ivy-mode 1)
-  (setq ivy-use-virtual-buffers t)
-  (global-set-key "\C-s" 'swiper)
-  (global-set-key (kbd "C-c C-r") 'ivy-resume)
-  (global-set-key (kbd "<f6>") 'ivy-resume)
-  (global-set-key (kbd "<f1> f") 'counsel-describe-function)
-  (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
-  (global-set-key (kbd "<f1> l") 'counsel-load-library)
-  (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
-  (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
-  (global-set-key (kbd "C-c g") 'counsel-git)
-  (global-set-key (kbd "C-c j") 'counsel-git-grep)
-  (global-set-key (kbd "C-c k") 'counsel-ag)
-  (global-set-key (kbd "C-x l") 'counsel-locate)
-  (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
-  (define-key read-expression-map (kbd "C-r") 'counsel-expression-history)
-  ))
-#+END_SRC
-* Switch to previous buffer
-#+BEGIN_SRC emacs-lisp
-  (defun er-switch-to-previous-buffer ()
-    "Switch to previously open buffer.
-  Repeated invocations toggle between the two most recently open buffers."
-    (interactive)
-    (switch-to-buffer (other-buffer (current-buffer))))
-
-  (global-set-key (kbd "C-c b") #'er-switch-to-previous-buffer)
-#+END_SRC
-* switchwindow
-#+BEGIN_SRC emacs-lisp
-  (use-package switch-window
-    :ensure t
-    :config
-    (setq switch-window-input-style 'minibuffer)
-    (setq switch-window-increase 4)
-    (setq switch-window-threshold 2)
-    (setq switch-window-shortcut-style 'qwerty)
-    (setq switch-window-qwerty-shortcuts
-	  '("a" "s" "d" "f" "h" "j" "k" "l"))
-    :bind
-    ([remap other-window] . switch-window))
-#+END_SRC
-* symon
-#+BEGIN_SRC emacs-lisp
-  (use-package symon
-    :ensure t
-    :bind
-    ("s-h" . symon-mode))
-#+END_SRC
-* Tags
-#+BEGIN_SRC emacs-lisp
- (setq org-tag-alist '(("@work" . ?w) ("@home" . ?h) ("@loneliness" . ?l) ("@gaming" . ?g) ("@complexity" . ?c) ))
-#+END_SRC
-* TODOS
-#+BEGIN_SRC emacs-lisp
-  (setq org-todo-keyword-faces
-        '(
-          ("DOING" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
-          ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
-          ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
-          ("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
-          ("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
-          ))
-
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "DOING(d)" "WAITING(w)" "FLEETING(f)" "|" "LONGTERM(l)" "CANCELED(c)" "DONE(f)")))
-#+END_SRC
-* Toggle fullscreen buffer
-#+BEGIN_SRC emacs-lisp
-  (defun toggle-maximize-buffer () "Maximize buffer"
-    (interactive)
-    (if (= 1 (length (window-list)))
-        (jump-to-register '_) 
-      (progn
-        (window-configuration-to-register '_)
-        (delete-other-windows))))
-  (global-set-key (kbd "C-M-f") 'toggle-maximize-buffer)
-#+END_SRC
-* Transparency
-#+BEGIN_SRC emacs-lisp
-  ;;(set-frame-parameter (selected-frame) 'alpha '(<active> . <inactive>))
-  ;;(set-frame-parameter (selected-frame) 'alpha <both>)
-  (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
-  (add-to-list 'default-frame-alist '(alpha . (100 . 100)))
-
-  (defun toggle-transparency ()
-     (interactive)
-     (let ((alpha (frame-parameter nil 'alpha)))
-       (set-frame-parameter
-        nil 'alpha
-        (if (eql (cond ((numberp alpha) alpha)
-                       ((numberp (cdr alpha)) (cdr alpha))
-                       ;; Also handle undocumented (<active> <inactive>) form.
-                       ((numberp (cadr alpha)) (cadr alpha)))
-                 100)
-            '(95 . 95) '(100 . 100)))))
-
-  (global-set-key (kbd "C-c t") 'toggle-transparency)
-#+END_SRC
-* Web mode / emmet
+* todo - Web mode / emmet
 #+BEGIN_SRC emacs-lisp
   (use-package web-mode
   :ensure t
@@ -1361,57 +1431,3 @@ Downloads packages by cloning from github
   (add-hook 'css-mode-hook  'emmet-mode) ;; enable Emmet's css abbreviation.
   )
 #+END_SRC
-* window splitting function
-#+BEGIN_SRC emacs-lisp
-  (defun split-and-follow-horizontally ()
-    (interactive)
-    (split-window-below)
-    (balance-windows)
-    (other-window 1))
-  (global-set-key (kbd "C-x 2") 'split-and-follow-horizontally)
-
-  (defun split-and-follow-vertically ()
-    (interactive)
-    (split-window-right)
-    (balance-windows)
-    (other-window 1))
-  (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
-#+END_SRC
-* Writing
-
-*stolen* from [[https://explog.in/notes/writingsetup.html][this guy]]
-
-#+BEGIN_SRC emacs-lisp
-  (setq org-indent-indentation-per-level 1)
-
-  (setq org-adapt-indentation nil)
-
-  (setq org-hide-emphasis-markers t)
-
-  (customize-set-variable 'org-blank-before-new-entry 
-                          '((heading . nil)
-                            (plain-list-item . nil)))
-  (setq org-cycle-separator-lines 1)
-
-#+END_SRC
-* yassnippet
-
-** Loading yassnippet
-#+BEGIN_SRC emacs-lisp
-  (use-package yasnippet
-    :ensure t
-    :config (use-package yasnippet-snippets
-              :ensure t)
-    (yas-reload-all))
-
-  (yas-global-mode 1)
-
-#+END_SRC
-* zoom all
-#+BEGIN_SRC emacs-lisp
-  ;; (defadvice text-scale-increase (around all-buffers (arg) activate)
-  ;;  (dolist (buffer (buffer-list))
-  ;;    (with-current-buffer buffer
-  ;;      ad-do-it))) 
-#+END_SRC
-
