@@ -14,6 +14,7 @@
 	org-return
 	org-self-insert-command
 	org-yank
+	text-scale-adjust
 	))
 
 (setq mc/cmds-to-run-once

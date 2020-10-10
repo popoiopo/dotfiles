@@ -1,26 +1,13 @@
-(setq user-full-name "Bas Chatel" user-mail-address "bastiaan.chatel@gmail.com")
-
 ;; General directories
 (setq emacs-dir "~/.emacs_test.d/")
-(setq dropbox-dir "~/Dropbox/")
-(setq github-dir "~/github/")
 
 ;; Configuration files
 (setq emacs-config-org-file (concat emacs-dir "config.org"))
-(setq zshrc-file "~/.zshrc")
-(setq index-org-file (concat dropbox-dir "orgfiles/index.org"))
-(setq skhdrc-file "~/.skhdrc")
-(setq qmk-keymap-file "~/qmk_firmware/keyboards/keebio/iris/keymaps/popoiopo/keymap.c")
-(setq yabai-file "~/.yabairc")
-(setq qutebrowser-file "~/.qutebrowser/qutemacs.py")
-(setq references-bib-file (concat dropbox-dir "bibliography/references.bib"))
+(setq emacs-config-custom-org-file (concat emacs-dir "config_custom.org"))
 
 ;; More specific files
 (setq amx-items (concat emacs-dir "amx-items"))
 (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
-(setq roamnotes-path (concat dropbox-dir "RoamNotes/"))
-(setq roam-db-path "~/org-roam.db")
-(setq org-journal-path (concat roamnotes-path "org-journal/"))
 
 ;; DOEN HET NOG NIET
 (setq backup-per-save (concat emacs-dir "backup/per-save"))
@@ -178,6 +165,10 @@ is already narrowed."
   (interactive)
   (find-file emacs-config-org-file))
 
+(defun config-custom-visit ()
+  (interactive)
+  (find-file emacs-config-custom-org-file))
+
 (defun config-reload ()
   (interactive)
   (org-babel-load-file (expand-file-name emacs-config-org-file)))
@@ -190,20 +181,12 @@ is already narrowed."
 (define-key z-map (kbd "n") 'narrow-or-widen-dwim)
 (define-key z-map (kbd "t") 'toggle-transparency)
 (define-key z-map (kbd "e") 'config-visit)
+(define-key z-map (kbd "E") 'config-custom-visit)
 (define-key z-map (kbd "r") 'config-reload)
-(define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file zshrc-file)))
-(define-key z-map (kbd "i") (defun indexEdit() (interactive) (find-file index-org-file)))
-(define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file skhdrc-file)))
-(define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file qmk-keymap-file)))
-(define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file yabai-file)))
-(define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file qutebrowser-file)))
-(define-key z-map (kbd "b") (defun bibtexEdit() (interactive) (find-file references-bib-file)))
 (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
 (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
 (define-key z-map (kbd "<down>") 'shrink-window)
 (define-key z-map (kbd "<up>") 'enlarge-window)
-(define-key z-map (kbd "C-j") 'org-journal-new-entry) 
-(define-key z-map (kbd "C-t") 'org-journal-today)
 (define-key z-map (kbd "C-<up>") 'buf-move-up)
 (define-key z-map (kbd "C-<down>") 'buf-move-down)
 (define-key z-map (kbd "C-<left>") 'buf-move-left)
@@ -285,6 +268,8 @@ is already narrowed."
   (apply orig-fun extension subtreep pub-dir nil))
 (advice-add 'org-export-output-file-name :around #'org-export-output-file-name-modified)
 
+(require 'ox-beamer)
+
 ;;(set-frame-parameter (selected-frame) 'alpha '(<active> . <inactive>))
 ;;(set-frame-parameter (selected-frame) 'alpha <both>)
 (set-frame-parameter (selected-frame) 'alpha '(100 . 100))
@@ -306,122 +291,6 @@ is already narrowed."
 
 (require 'multiple-cursors)
 
-(use-package org-roam
-      :ensure t
-      :hook
-      (after-init . org-roam-mode)
-      :custom
-      (org-roam-directory  roamnotes-path)
-      (org-roam-db-location roam-db-path)
-      :bind (:map org-roam-mode-map
-              (("C-c n l" . org-roam)                          ;; Show backlinks in an extra buffer on the left
-               ("C-c n f" . orb-find-non-ref-file)             ;; Find your notes easily through the database
-               ("C-c n g" . org-roam-graph-show))              ;; Show your knowledge-base in graph shape
-              :map org-mode-map
-              (("C-c n i" . orb-insert-non-ref))               ;; Insert a link to a note
-              (("C-c n I" . org-roam-insert-immediate))))      ;; Same as previous
-
-(setq org-roam-capture-templates
-      '(
-        ;; Alle informatie met referenties naar waar ik het vandaan heb. Dit wordt het grootste deel die concepten uitlegt met referenties naar snippets.
-        ("k" "Knowledge base" plain (function org-roam--capture-get-point)
-        "%?"
-        :file-name "knowledge_base/%<%Y%m%d%H%M%S>-${slug}"
-        :head "#+title: ${title}\n\n- tags :: [[file:20200729175519-knowledge_base.org][Knowledge base]]\n\n* "
-        :unnarrowed t)
-
-        ;; Hier staat alle informatie over mensen die ik ken; waar ik ze van ken, waar ze goed in zijn, verjaardag, etc. Dit functioneert als basis waar ik naar kan refereren als ik hulp nodig heb van iemand en ook voor leuk dat ik kan terug zien wat ik met die persoon heb gedaan vanuit de org-journal folder.
-        ("p" "Personal" plain (function org-roam--capture-get-point)
-          "%?"
-          :file-name "personal/%<%Y%m%d%H%M%S>-${slug}"
-          :head "#+title: ${title}\n\n- tags ::  [[file:20200729175551-personal.org][personal]]\n- birthday :: \n- Contact\n  - Phonenumber :: \n  - Email :: \n\n* "
-          :unnarrowed t)
-
-        ;; Hier komen alle interessante ideeën die niet perse met literatuur versterkt worden, niet goed uitgewerkt zijn of simpelweg een interessante notion is waar ik later iets mee kan.
-        ("i" "Ideas" plain (function org-roam--capture-get-point)
-          "%?"
-          :file-name "ideas/%<%Y%m%d%H%M%S>-${slug}"
-          :head "#+title: ${title}\n\n- tags :: [[file:20200729175615-ideas.org][Ideas]]\n\n* "
-          :unnarrowed t)
-
-        ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
-        ("a" "Papers and Articles" plain (function org-roam--capture-get-point)
-          "%?"
-          :file-name "papers_and_articles/%<%Y%m%d%H%M%S>-${slug}"
-          :head "#+title: ${title}\n\n- tags :: [[file:20200729175758-papers_and_articles.org][papers_and_articles]]\n\n* "
-          :unnarrowed t)
-
-        ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
-        ("w" "Work" plain (function org-roam--capture-get-point)
-          "%?"
-          :file-name "work/%<%Y%m%d%H%M%S>-${slug}"
-          :head "#+title: ${title}\n\n- tags :: [[file:20200902142233-work.org][work]]\n\n* "
-          :unnarrowed t)
-
-        ;; Hier staan, labelled per programmeer taal en functie (optimization, plotting, etc.), de snippets voor bepaalde methodes, wiskundige formules die uitgeprogrammeerd zijn etc.
-        ("s" "Snippets" plain (function org-roam--capture-get-point)
-          "%?"
-          :file-name "snippets/%<%Y%m%d%H%M%S>-${slug}"
-          :head "#+title: ${title}\n\n- tags :: [[file:20200729175823-snippets.org][snippets]]\n\n* "
-          :unnarrowed t)
-        )
-      )
-
-;; On search for notes, prepend its respective directory name
-(setq org-roam-tag-sources '(prop last-directory))
-
-(setq org-tag-alist '(("@short" . ?s) ("@medium" . ?m) ("@long" . ?l) ("@very long" . ?v)
-                      ("@write" . ?w) ("@read" . ?r) ("@code" . ?c) ("@email" . ?e) ("@bellen" . ?b)
-                      ("@kopen" . ?k) ("@terugbetalen" . ?t) ("@gaan" . ?g)))
-
-(use-package org-journal
-  :ensure t
-  :defer t
-  :config
-  (setq org-journal-dir org-journal-path
-	org-journal-enable-agenda-integration t
-	org-journal-date-prefix "#+TITLE: "
-	org-journal-file-format "%Y-%m-%d.org"
-	org-journal-date-format "%A, %d %B %Y"))
-
-(setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"WAITING\"|TODO=\"FLEETING\"|TODO=\"LONGTERM\"")
-
-(defun org-journal-file-header-func (time)
-  "Custom function to create journal header."
-  (concat
-    (pcase org-journal-file-type
-      (`daily (concat "#+TITLE: " (format-time-string org-journal-date-format time) "\n#+STARTUP: folded\n* Tags and resources\n- tags :: \n- resources ::\n* TODOS\n")))))
-
-(setq org-journal-file-header 'org-journal-file-header-func)
-
-(require 'org-journal)
-
-(defun org-journal-find-location ()
-  ;; Open today's journal, but specify a non-nil prefix argument in order to
-  ;; inhibit inserting the heading; org-capture will insert the heading.
-  (org-journal-new-entry t)
-  ;; Position point on the journal's top-level heading so that org-capture
-  ;; will add the new entry as a child entry.
-  (goto-char (point-min)))
-
-(defun org-journal-save-entry-and-exit()
-  "Simple convenience function.
-  Saves the buffer of the current day's entry and kills the window
-  Similar to org-capture like behavior"
-  (interactive)
-  (save-buffer)
-  (kill-buffer-and-window))
-(define-key org-journal-mode-map (kbd "C-x C-s") 'org-journal-save-entry-and-exit)
-
-(defun org-journal-today ()
-    (interactive)
-    (org-journal-new-entry t))
-
-;; Fix scheduling as it broke because of org-journal
-(define-key org-journal-mode-map (kbd "C-c s") 'org-journal-search)
-(add-hook 'org-mode-hook
-	  (lambda () (local-set-key (kbd "C-c C-s") 'org-schedule)))
-
 (use-package org-bullets
   :ensure t
   :config
@@ -435,12 +304,6 @@ is already narrowed."
 (customize-set-variable 'org-blank-before-new-entry 
                         '((heading . nil)
                           (plain-list-item . nil)))   ;; Dont randomly remove newlines below headers
-
-(global-set-key (kbd "C-c c")
-                'org-capture)
-
-(setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
-                               "* Day journal\n** %(format-time-string org-journal-time-format)%?")))
 
 (setq org-image-actual-width 600)
 

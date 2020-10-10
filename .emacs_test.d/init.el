@@ -27,6 +27,7 @@
 ;; load org package and our emacs-config.org file
 (require 'org)
 (org-babel-load-file (expand-file-name "~/.emacs_test.d/config.org"))
+(org-babel-load-file (expand-file-name "~/.emacs_test.d/config_custom.org"))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -34,7 +35,7 @@
  ;; If there is more than one, they won't work right.
  '(ivy-mode t)
  '(org-agenda-files
-   '("/Users/chatel/Dropbox/RoamNotes/org-journal/2020-10-06.org"))
+   '("/Users/chatel/Dropbox/RoamNotes/org-journal/2020-10-09.org"))
  '(org-blank-before-new-entry '((heading) (plain-list-item)))
  '(package-selected-packages
    '(doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring ox-twbs ox-reveal org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy)))

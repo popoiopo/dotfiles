@@ -1,6 +1,10 @@
 
 ;; ----- amx-history -----
 (
+ org-publish-current-project
+ org-publish
+ org-publish-current-file
+ make-directory
  visual-line-mode
  eww
  org-agenda
@@ -47,10 +51,6 @@
  ping
  pong
  smex
- talk
- term
- undo
- yank
 )
 
 ;; ----- amx-data -----
@@ -66,4 +66,8 @@
  (org-schedule . 1)
  (org-agenda . 1)
  (eww . 1)
+ (make-directory . 1)
+ (org-publish-current-file . 1)
+ (org-publish . 5)
+ (org-publish-current-project . 2)
 )
