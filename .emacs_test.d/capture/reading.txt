@@ -1,0 +1,9 @@
+* LONGTERM Book: %^{Author} - %^{Titel}
+:PROPERTIES:
+:Author: %\1
+:Title:  %\2
+:END:
+- Reason for reading: %?
+:LOGBOOK:
+- Added: %U
+:END:

@@ -1,0 +1,14 @@
+*** Author: %^{Author} - Title: %^{Title} - Year: %^{Year}
+:PROPERTIES:
+:Author: %\1
+:Title:  %\2
+:Year:   %\3
+:END:
+:LOGBOOK:
+- Added: %U
+:END:
+
+#+BEGIN_SRC bibtex
+%^{Bibtex entry}
+#+BEGIN_SRC
+%?

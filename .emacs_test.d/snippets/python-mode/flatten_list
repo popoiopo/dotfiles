@@ -1,0 +1,10 @@
+def flatten(nested_list):
+    return list(_flattengen(nested_list))
+
+
+def _flattengen(iterable):
+    for element in iterable:
+        if isinstance(element, list):
+            yield from _flattengen(element)
+        else:
+            yield element

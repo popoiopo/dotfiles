@@ -1,0 +1,11 @@
+# -*- mode: snippet -*-
+# name: refE
+# key: refE
+# --
+*** $1
+
+#+begin_src bibtex
+  $2
+#+end_src
+
+$0
