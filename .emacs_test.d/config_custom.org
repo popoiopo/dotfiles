@@ -25,44 +25,59 @@ Here we provide important directories and files. For example, I use Dropbox to s
 | | | |- Snippets
 | | | |- Work
 | | |- Bibliography
-| | |- PhD 
+| | |- PhD
 
-#+BEGIN_SRC emacs-lisp
-  ;; General directories
-  (setq dropbox-dir "~/Dropbox/")
-  (setq github-dir "~/github/")
-
-  ;; Configuration files
-  (setq zshrc-file "~/.zshrc")
-  (setq index-org-file (concat dropbox-dir "orgfiles/index.org"))
-  (setq skhdrc-file "~/.skhdrc")
-  (setq qmk-keymap-file "~/qmk_firmware/keyboards/keebio/iris/keymaps/popoiopo/keymap.c")
-  (setq yabai-file "~/.yabairc")
-  (setq qutebrowser-file "~/.qutebrowser/qutemacs.py")
-  (setq references-bib-file (concat dropbox-dir "bibliography/references.bib"))
-
-  ;; More specific files
-  (setq roamnotes-path (concat dropbox-dir "RoamNotes/"))
-  (setq roam-db-path "~/org-roam.db")
-  (setq org-journal-path (concat roamnotes-path "org-journal/"))
-#+END_SRC
 * Configuration
-** Custom file editing shortcuts
-#+BEGIN_SRC emacs-lisp
-  (define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file zshrc-file)))
-  (define-key z-map (kbd "i") (defun indexEdit() (interactive) (find-file index-org-file)))
-  (define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file skhdrc-file)))
-  (define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file qmk-keymap-file)))
-  (define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file yabai-file)))
-  (define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file qutebrowser-file)))
-  (define-key z-map (kbd "b") (defun bibtexEdit() (interactive) (find-file references-bib-file)))
-  (define-key z-map (kbd "C-j") 'org-journal-new-entry) 
-  (define-key z-map (kbd "C-t") 'org-journal-today)
-#+END_SRC
 ** Management - Knowledge
 *** Citations
+Org ref is a powerful reference manager written fully in Elisp. Check [[https://github.com/jkitchin/org-ref][here]] to read about it.
+#+BEGIN_SRC emacs-lisp
+  (require 'org-ref)
+
+  (setq reftex-default-bibliography '(references-bib-file))
+
+  ;; see org-ref for use of these variables
+  (setq org-ref-bibliography-notes (concat bib-folder-path "notes.org")
+        org-ref-default-bibliography references-bib-file
+        org-ref-pdf-directory bib-folder-path)
+
+  (setq bibtex-completion-bibliography '(references-bib-file)
+        bibtex-completion-library-path bib-folder-path
+        bibtex-completion-pdf-field "file"
+        bibtex-completion-notes-template-multiple-files
+         (concat
+          "#+title: ${title}\n"
+          "#+roam_key: cite:${=key=}\n"
+          "* TODO Notes\n"
+          ":PROPERTIES:\n"
+          ":Custom_ID: ${=key=}\n"
+          ":NOTER_DOCUMENT: %(orb-process-file-field \"${=key=}\")\n"
+          ":AUTHOR: ${author-abbrev}\n"
+          ":JOURNAL: ${journaltitle}\n"
+          ":DATE: ${date}\n"
+          ":YEAR: ${year}\n"
+          ":DOI: ${doi}\n"
+          ":URL: ${url}\n"
+          ":END:\n\n")
+        bibtex-completion-notes-path bib-folder-path)
+
+  ;; open pdf with system pdf viewer (works on mac)
+  (setq bibtex-completion-pdf-open-function
+    (lambda (fpath)
+      (start-process "open" "*open*" "open" fpath)))
+
+  (setq org-latex-pdf-process (list "latexmk -shell-escape -bibtex -f -pdf %f"))
+  (setq org-latex-prefer-user-labels t)
+
+  ;; Making emacs find latex (so that C-c C-x C-l works on orgmode)
+  (setenv "PATH" (concat ":/Library/TeX/texbin/" (getenv "PATH")))
+  (add-to-list 'exec-path "/Library/TeX/texbin/")
+  (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.5))
+
+#+END_SRC
+
 *** Org roam
-One of the cornerstones of my knowledge management. This is based on Roam research or zettelkasten. 
+One of the cornerstones of my knowledge management. This is based on Roam research or zettelkasten.
 #+BEGIN_SRC emacs-lisp
   (use-package org-roam
         :ensure t
@@ -131,9 +146,32 @@ One of the cornerstones of my knowledge management. This is based on Roam resear
 ** Management - Workflow/project
 *** Tags
 #+BEGIN_SRC emacs-lisp
-  (setq org-tag-alist '(("@short" . ?s) ("@medium" . ?m) ("@long" . ?l) ("@very long" . ?v)
-                        ("@write" . ?w) ("@read" . ?r) ("@code" . ?c) ("@email" . ?e) ("@bellen" . ?b)
-                        ("@kopen" . ?k) ("@terugbetalen" . ?t) ("@gaan" . ?g)))
+  (setq org-tag-alist '(("CODING" . ?c) ("PHONING" . ?p) ("EMAILING" . ?e) ("WRITING" . ?w) ("THINKING" . ?t) ("READING" . ?r) ("DOING" . ?d)))
+#+END_SRC
+*** Agenda
+#+BEGIN_SRC emacs-lisp
+  (setq org-agenda-files '(("~/Dropbox/RoamNotes/GTD/work.org")
+			   ("~/Dropbox/RoamNotes/GTD/personal.org")
+			   ("~/Dropbox/RoamNotes/GTD/phone.org")))
+
+  (defun org-focus-private() "Set focus on private things."
+	 (interactive)
+	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/personal.org")))
+  (defun org-focus-phone() "Set focus on things on mobile."
+	 (interactive)
+	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/phone.org")))
+  (defun org-focus-work() "Set focus on work things."
+	 (interactive)
+	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org")))
+  (defun org-focus-past() "Set focus on past things."
+	 (interactive)
+	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org_archive" "~/Dropbox/RoamNotes/GTD/personal.org_archive")))
+  (defun org-focus-all-future() "Set focus on all future things."
+	 (interactive)
+	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org" "~/Dropbox/RoamNotes/GTD/phone.org" "~/Dropbox/RoamNotes/GTD/personal.org")))
+  (defun org-focus-all() "Set focus on all things."
+	 (interactive)
+	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org" "~/Dropbox/RoamNotes/GTD/phone.org" "~/Dropbox/RoamNotes/GTD/personal.org" "~/Dropbox/RoamNotes/GTD/work.org_archive" "~/Dropbox/RoamNotes/GTD/personal.org_archive")))
 #+END_SRC
 *** Org Journal
 A big part of my workflow. In the beginning of each day I create a journal entry that uses org-journal to take all my current TODOs to the new day. The new entry is filled with org-journal-file-header-func as a template, carries over all elements that are defined in org-journal-carryover-items and puts them under the TODO header.
@@ -143,12 +181,11 @@ A big part of my workflow. In the beginning of each day I create a journal entry
     :defer t
     :config
     (setq org-journal-dir org-journal-path
-	  org-journal-enable-agenda-integration t
 	  org-journal-date-prefix "#+TITLE: "
 	  org-journal-file-format "%Y-%m-%d.org"
 	  org-journal-date-format "%A, %d %B %Y"))
 
-  (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"WAITING\"|TODO=\"FLEETING\"|TODO=\"LONGTERM\"")
+  (setq org-journal-carryover-items "TODO=\"TODO\"|TODO=\"DOING\"|TODO=\"WAITING\"|TODO=\"FLEETING\"|TODO=\"LONGTERM\"|TODO=\"REPEAT\"")
 
   (defun org-journal-file-header-func (time)
     "Custom function to create journal header."
@@ -168,33 +205,57 @@ A big part of my workflow. In the beginning of each day I create a journal entry
     ;; will add the new entry as a child entry.
     (goto-char (point-min)))
 
-  (defun org-journal-save-entry-and-exit()
-    "Simple convenience function.
-    Saves the buffer of the current day's entry and kills the window
-    Similar to org-capture like behavior"
-    (interactive)
-    (save-buffer)
-    (kill-buffer-and-window))
-  (define-key org-journal-mode-map (kbd "C-x C-s") 'org-journal-save-entry-and-exit)
-
   (defun org-journal-today ()
       (interactive)
       (org-journal-new-entry t))
 
   ;; Fix scheduling as it broke because of org-journal
-  (define-key org-journal-mode-map (kbd "C-c s") 'org-journal-search)
   (add-hook 'org-mode-hook
 	    (lambda () (local-set-key (kbd "C-c C-s") 'org-schedule)))
+#+END_SRC
+** Projectile
+#+BEGIN_SRC emacs-lisp
+  (use-package projectile
+    :diminish projectile-mode
+    :config (projectile-mode)
+    :custom ((projectile-completion-system 'ivy))
+    :bind-keymap
+    ("C-c p" . projectile-command-map)
+    :init
+    ;; NOTE: Set this to the folder where you keep your Git repos!
+    (when (file-directory-p "~/github/")
+      (setq projectile-project-search-path '("~/github/")))
+    (setq projectile-switch-project-action #'projectile-dired))
+#+END_SRC
+** PDF tools
+#+BEGIN_SRC emacs-lisp
+  (pdf-tools-install)
+  (pdf-loader-install)
 #+END_SRC
 ** Org
 *** Org Capture
 Org capture makes creating a template from org a little easier. It creates a new file in which a function can be called and the template will be inserted.
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-c c")
-                  'org-capture)
+		  'org-capture)
 
-  (setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
-                                 "* Day journal\n** %(format-time-string org-journal-time-format)%?")))
+  (setq org-capture-templates '(("j" "Journal entry" entry (file+olp+datetree
+							    "~/Dropbox/RoamNotes/org-journal/2021.org")
+				 (file "~/.emacs_test.d/capture/journal.txt")
+				 :empty-lines-after 1)
+				("r" "Reading entry" entry (file+headline
+							    "~/Dropbox/RoamNotes/GTD/work.org" "Leeslijst")
+				 (file "~/.emacs_test.d/capture/reading.txt")
+				 :empty-lines-after 1)
+				("t" "TODO" entry (file
+						   "~/Dropbox/RoamNotes/GTD/work.org")
+				 (file "~/.emacs_test.d/capture/todo.txt")
+				 :empty-lines-after 0)
+				("b" "BibEntry" entry (file+headline
+						       "~/Dropbox/RoamNotes/papers_and_articles/references.org" "New")
+				 (file "~/.emacs_test.d/capture/refE.txt")
+				 :empty-lines-after 1)
+				 ))
 #+END_SRC
 ** All things blog publishing
 *** Some setup
@@ -254,7 +315,7 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
            :html-postamble bc_blog/footer
            :auto-sitemap t
            :sitemap-sort-files anti-chronologically
-           :sitemap-title "BC Blog"           
+           :sitemap-title "BC Blog"
            :headline-levels 4             ; Just the default for this project.
            )
 
@@ -271,7 +332,7 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
            :base-extension "org"
            :publishing-directory "~/github/popoiopo.github.io/"
            :recursive t
-           :publishing-function org-reveal-publish-to-reveal          
+           :publishing-function org-reveal-publish-to-reveal
            )
           ("bc_blog" :components ("bc-pages" "bc-static" "bc-presentations"))
           ))
@@ -313,4 +374,104 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
 #+BEGIN_SRC emacs-lisp
   (require 'ox-twbs)
 #+END_SRC
+** Programming
+*** Python
+**** Pyvenv
+#+BEGIN_SRC emacs-lisp
+  (use-package pyvenv
+    :ensure t
+    :init
+    (setenv "WORKON_HOME" "~/.pyenv/versions"))
+#+END_SRC
+**** Blacken
+Black is an opinionated pyton formatter. Install with pip install black so the command line tool is available.
+#+BEGIN_SRC emacs-lisp
+  (use-package blacken
+    :config
+    (add-hook 'python-mode-hook 'blacken-mode))
+#+END_SRC
+**** Move line
+#+BEGIN_SRC emacs-lisp
+  (defun move-line (n)
+    "Move the current line up or down by N lines."
+    (interactive "p")
+    (setq col (current-column))
+    (beginning-of-line) (setq start (point))
+    (end-of-line) (forward-char) (setq end (point))
+    (let ((line-text (delete-and-extract-region start end)))
+      (forward-line n)
+      (insert line-text)
+      ;; restore point to original column in moved line
+      (forward-line -1)
+      (forward-char col)))
 
+  (defun move-line-up (n)
+    "Move the current line up by N lines."
+    (interactive "p")
+    (move-line (if (null n) -1 (- n))))
+
+  (defun move-line-down (n)
+    "Move the current line down by N lines."
+    (interactive "p")
+    (move-line (if (null n) 1 n)))
+
+  (global-set-key (kbd "M-<up>") 'move-line-up)
+  (global-set-key (kbd "M-<down>") 'move-line-down)
+#+END_SRC
+** LSP mode
+** Expand region
+#+BEGIN_SRC emacs-lisp
+  ;;expand region
+  (require 'expand-region)
+  (global-set-key (kbd "C-=") 'er/expand-region)
+#+END_SRC
+** Emacs grammarly
+#+BEGIN_SRC emacs-lisp
+  (defun grammarly-push ()
+    "Save region to a tempfile and run Grammarly on it."
+    (interactive)
+    (kill-region (region-beginning) (region-end))
+    ;;(insert "<<here>>")
+    (call-process-shell-command "osascript ~/.emacs_test.d/plugins/emacs-grammarly/push.scpt")
+    )
+
+  (defun grammarly-pull()
+    "Save region to a tempfile and run Grammarly on it."
+    (interactive)
+    (call-process-shell-command "osascript ~/.emacs_test.d/plugins/emacs-grammarly/pull.scpt")
+    (yank)
+    )
+
+#+END_SRC
+** Fill table
+Awesome way to make the tables fit the screen by filling the rows and columns, check [[https://github.com/casouri/ftable][here for more info]]
+#+BEGIN_SRC emacs-lisp
+  (load-file "~/.emacs_test.d/plugins/ftable/ftable.el")
+  (setq ftable-fill-column 50)
+#+END_SRC
+** Timer
+#+BEGIN_SRC emacs-lisp
+  (defun show-msg-after-timer ()
+    "Show a message after timer expires. Based on run-at-time and can understand time like it can."
+    (interactive)
+    (let* ((msg-to-show (read-string "Enter msg to show: "))
+	   (time-duration (number-to-string (* 60 (string-to-number (read-string "Time? "))))))
+      (message (concat "Timer will run for " time-duration " seconds."))
+      (run-at-time time-duration nil #'message-box msg-to-show)
+      (run-at-time time-duration nil 'shell-command "afplay ~/.emacs_test.d/timer-sound.wav")))
+#+END_SRC
+* Unicode shorts
+#+BEGIN_SRC emacs-lisp
+  (set-language-environment "UTF-8")
+  (set-default-coding-systems 'utf-8)
+
+  ;; set keys to type Unicode
+  (define-key key-translation-map (kbd "<f9> <down>") (kbd "↓"))
+  (define-key key-translation-map (kbd "<f9> <left>") (kbd "←"))
+  (define-key key-translation-map (kbd "<f9> <right>") (kbd "→"))
+  (define-key key-translation-map (kbd "<f9> <up>") (kbd "↑"))
+#+END_SRC
+* Org-drill
+#+BEGIN_SRC emacs-lisp
+  (require 'org-drill)
+#+END_SRC

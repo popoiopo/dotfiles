@@ -1,4 +1,6 @@
 ;; General directories
+(setq github-dir "~/github/")
+(setq dropbox-dir "~/Dropbox/")
 (setq emacs-dir "~/.emacs_test.d/")
 
 ;; Configuration files
@@ -9,10 +11,35 @@
 (setq amx-items (concat emacs-dir "amx-items"))
 (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
 
-;; DOEN HET NOG NIET
+;; Backup files
 (setq backup-per-save (concat emacs-dir "backup/per-save"))
 (setq backup-per-session (concat emacs-dir "backup/per-session"))
-(setq libre-office-path "/Applications/LibreOffice.app/Contents/MacOS/soffice")
+
+;; Configuration files
+(setq zshrc-file "~/.zshrc")
+(setq skhdrc-file "~/.skhdrc")
+(setq qmk-keymap-file "~/qmk_firmware/keyboards/keebio/iris/keymaps/popoiopo/keymap.c")
+(setq yabai-file "~/.yabairc")
+(setq qutebrowser-file "~/.qutebrowser/qutemacs.py")
+
+;; Roam
+(setq roamnotes-path (concat dropbox-dir "RoamNotes/"))
+(setq roam-db-path "~/org-roam.db")
+
+;; More specific files
+(setq org-journal-path (concat roamnotes-path "org-journal/"))
+(setq journal-file (concat org-journal-path "2021.org"))
+
+;; Reference managing
+(setq bib-folder-path (concat roamnotes-path "papers_and_articles/"))
+(setq bib-org-file (concat bib-folder-path "references.org"))
+(setq references-bib-file (concat bib-folder-path "references.bib"))
+
+;; GTD
+(setq gtd-path (concat roamnotes-path "GTD/"))
+(setq work-gtd-file (concat gtd-path "work.org"))
+(setq personal-gtd-file (concat gtd-path "personal.org"))
+(setq phone-gtd-file (concat gtd-path "phone.org"))
 
 (use-package company
   :ensure t
@@ -95,7 +122,7 @@ is already narrowed."
   (interactive)
   (switch-to-buffer (other-buffer (current-buffer))))
 
-(global-set-key (kbd "C-c b") #'er-switch-to-previous-buffer)
+(global-set-key (kbd "C-c b") 'er-switch-to-previous-buffer)
 
 (use-package switch-window
   :ensure t
@@ -112,7 +139,7 @@ is already narrowed."
 (defun toggle-maximize-buffer () "Maximize buffer"
   (interactive)
   (if (= 1 (length (window-list)))
-      (jump-to-register '_) 
+      (jump-to-register '_)
     (progn
       (window-configuration-to-register '_)
       (delete-other-windows))))
@@ -131,6 +158,9 @@ is already narrowed."
   (balance-windows)
   (other-window 1))
 (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+
+(use-package rotate
+   :ensure t)
 
 (setq version-control t     ;; Use version numbers for backups.
       kept-new-versions 10  ;; Number of newest versions to keep.
@@ -173,16 +203,28 @@ is already narrowed."
   (interactive)
   (org-babel-load-file (expand-file-name emacs-config-org-file)))
 
+(defun save-and-exit()
+  "Simple convenience function.
+    Saves the buffer of the current day's entry and kills the window
+    Similar to org-capture like behavior"
+  (interactive)
+  (save-buffer)
+  (kill-buffer-and-window))
+(global-set-key (kbd "C-x C-S-s") 'save-and-exit)
+(global-set-key (kbd "C-x C-M-S-s") 'org-save-all-org-buffers)
+
 ;; set up my own map for files, folder and windows
 (define-prefix-command 'z-map)
 (global-set-key (kbd "C-z") 'z-map)
-(define-key z-map (kbd "a") 'org-agenda-show-agenda-and-todo)
-(define-key z-map (kbd "c") 'avy-goto-char)
+(define-key z-map (kbd "a") 'org-agenda)
 (define-key z-map (kbd "n") 'narrow-or-widen-dwim)
-(define-key z-map (kbd "t") 'toggle-transparency)
-(define-key z-map (kbd "e") 'config-visit)
-(define-key z-map (kbd "E") 'config-custom-visit)
-(define-key z-map (kbd "r") 'config-reload)
+(define-key z-map (kbd "C-t") 'toggle-transparency)
+
+;; Grammarly
+(define-key z-map (kbd "g g") 'grammarly-pull)
+(define-key z-map (kbd "g p") 'grammarly-push)
+
+;; Buffer movement
 (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
 (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
 (define-key z-map (kbd "<down>") 'shrink-window)
@@ -191,6 +233,43 @@ is already narrowed."
 (define-key z-map (kbd "C-<down>") 'buf-move-down)
 (define-key z-map (kbd "C-<left>") 'buf-move-left)
 (define-key z-map (kbd "C-<right>") 'buf-move-right)
+(define-key z-map (kbd "C-r") 'rotate-layout)
+(define-key z-map (kbd "C-m v") 'rotate:main-vertical)
+(define-key z-map (kbd "C-m h") 'rotate:main-horizontal)
+(define-key z-map (kbd "C-e t") 'rotate:tiled)
+(define-key z-map (kbd "C-e v") 'rotate:even-vertical)
+(define-key z-map (kbd "C-e h") 'rotate:even-horizontal)
+
+;; UNCOMMENT IF YOU'RE NOT ME :)
+(define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file zshrc-file)))
+(define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file skhdrc-file)))
+(define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file qmk-keymap-file)))
+(define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file yabai-file)))
+(define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file qutebrowser-file)))
+
+;; Bibfile and ref management files
+(define-key z-map (kbd "b") (defun bibOrgEdit() (interactive) (find-file bib-org-file)))
+(define-key z-map (kbd "C-b") (defun bibtexEdit() (interactive) (find-file references-bib-file)))
+
+;; GTD files
+(define-key z-map (kbd "p") (defun work-GTD() (interactive) (find-file personal-gtd-file)))
+(define-key z-map (kbd "w") (defun personal-GTD() (interactive) (find-file work-gtd-file)))
+(define-key z-map (kbd "f") (defun phone-GTD() (interactive) (find-file phone-gtd-file)))
+(define-key z-map (kbd "t") (defun phone-GTD() (interactive) (find-file journal-file)))
+(define-key z-map (kbd "o p") 'org-focus-private)
+(define-key z-map (kbd "o f") 'org-focus-phone)
+(define-key z-map (kbd "o w") 'org-focus-work)
+(define-key z-map (kbd "o a") 'org-focus-all-future)
+(define-key z-map (kbd "o P") 'org-focus-past)
+(define-key z-map (kbd "o A") 'org-focus-all)
+
+;; Emacs config files
+(define-key z-map (kbd "E") 'config-custom-visit)
+(define-key z-map (kbd "r") 'config-reload)
+(define-key z-map (kbd "e") 'config-visit)
+
+;; Timer
+(define-key z-map (kbd "k") 'show-msg-after-timer)
 
 ;; ORG extra keybinding
 ;; Store a reference link to an org mode location
@@ -223,6 +302,24 @@ is already narrowed."
 ;; With control shift and a mouse-click add cursor
 (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
 
+;; Kill whole line
+(global-set-key (kbd "C-S-k") 'kill-whole-line)
+
+;; Go anywhere in just a few strokes
+(global-set-key (kbd "C-S-s") 'avy-goto-char)
+
+;; Refile within same file
+(global-set-key (kbd "C-c w") 'org-refile-in-file)
+
+;;;;;;;;;;;;;;;;;;;;
+;;; set up unicode
+(prefer-coding-system       'utf-8)
+(set-default-coding-systems 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(setq default-buffer-file-coding-system 'utf-8)
+(setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
+
 ;; replace \n\n with bigskip
 (defun my-replace-double-newline (backend)
   "replace multiple blank lines with bigskip"
@@ -241,32 +338,28 @@ is already narrowed."
 ;; org v8 bundled with Emacs 24.4
 (setq org-odt-preferred-output-format "doc")
 ;; BTW, you can assign "pdf" in above variables if you prefer PDF format
-
 ;; Only OSX need below setup
 (defun my-setup-odt-org-convert-process ()
   (setq process-string "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")
   (interactive)
-  (let ((cmd libre-office-path))
-    (when (and (eq system-type 'darwin) (file-exists-p cmd))
-      ;; org v7
-      (setq org-export-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")))
-      ;; org v8
-      (setq org-odt-convert-processes '(("LibreOffice"  "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
-    ))
-(my-setup-odt-org-convert-process)
+  (let ((cmd "/Applications/LibreOffice.app/Contents/MacOS/soffice"))
+     (when (and (eq system-type 'darwin) (file-exists-p cmd))
+       ;; org v7
+       (setq org-export-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")))
+       ;; org v8
+       (setq org-odt-convert-processes '(("LibreOffice"  "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
+     ))
+ (my-setup-odt-org-convert-process)
+
+(eval-after-load "org"
+  '(require 'ox-md nil t))
 
 (use-package ox-reveal
 :ensure ox-reveal)
 (setq org-reveal-mathjax t)
 (use-package htmlize :ensure t)
 
-(defun org-export-output-file-name-modified (orig-fun extension &optional subtreep pub-dir)
-  (unless pub-dir
-    (setq pub-dir "exported-org-files")
-    (unless (file-directory-p pub-dir)
-      (make-directory pub-dir)))
-  (apply orig-fun extension subtreep pub-dir nil))
-(advice-add 'org-export-output-file-name :around #'org-export-output-file-name-modified)
+(setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
 
 (require 'ox-beamer)
 
@@ -291,6 +384,10 @@ is already narrowed."
 
 (require 'multiple-cursors)
 
+;;expand region
+(require 'expand-region)
+(global-set-key (kbd "C-=") 'er/expand-region)
+
 (use-package org-bullets
   :ensure t
   :config
@@ -301,11 +398,15 @@ is already narrowed."
 (setq org-hide-emphasis-markers t)                    ;; When making something bold *Hallo*, hide stars. Goes for all emphasis markers.
 (setq org-cycle-separator-lines 1)                    ;; Leave a single empty line between headers if there is one. Otherwise leave no room or make the empty lines belong to the previous header.
 (setq org-hide-leading-stars 't)                      ;; Hide the extra stars in front of a header (org-bullet displays nicer, but why add extra package)
-(customize-set-variable 'org-blank-before-new-entry 
+(customize-set-variable 'org-blank-before-new-entry
                         '((heading . nil)
                           (plain-list-item . nil)))   ;; Dont randomly remove newlines below headers
 
 (setq org-image-actual-width 600)
+
+(setq org-priority-highest ?A)
+(setq org-priority-default ?C)
+(setq org-priority-lowest ?E)
 
 (org-babel-do-load-languages
  'org-babel-load-languages
@@ -320,6 +421,9 @@ is already narrowed."
 (setq-default display-line-numbers 'relative) ;; Setting the line numbers
 (when window-system (global-hl-line-mode t)) ;; Get a current line shadow in IDE
 (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
+(add-hook 'before-save-hook 'delete-trailing-whitespace) ;; I never want whitespace at the end of lines. Remove it on save.
+(setq sentence-end-double-space nil);; Start a new sentence with just a single space instead of 2
+(exec-path-from-shell-initialize)   ;; Fixes path issues on mac emacs.app so that same env of terminal is used
 
 (use-package hungry-delete
   :ensure t
@@ -331,9 +435,10 @@ is already narrowed."
 (global-auto-revert-mode 1)         ;; Make sure that you're always looking at the latest version of a file. Change file when changed on disk
 (delete-selection-mode 1)           ;; Remove text from selection instead of just inserting text
 (display-time-mode 1)               ;; Set clock on lower right side
-(electric-pair-mode t)              ;; Enable electric pair mode. It autocompletes certain pairs. E.g., (), {}, [], <>
+;; (electric-pair-mode t)              ;; Enable electric pair mode. It autocompletes certain pairs. E.g., (), {}, [], <>
 (global-subword-mode 1)             ;; Cause M-f to move forward per capitalization within a word. E.g., weStopAtEveryCapital
 (global-visual-line-mode 1)                ;; Make sure that lines do not disapear at the right side of the screen but wrap around
+(add-hook 'prog-mode-hook 'electric-pair-mode)
 
 (use-package popup-kill-ring
   :ensure t
@@ -346,15 +451,39 @@ is already narrowed."
 
 (setq org-todo-keyword-faces
       '(
-        ("DOING" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
-        ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
-        ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
-        ("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
-        ("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
-        ))
+	("NEXT" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
+	("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
+	("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
+	("PROJ" . (:foreground "#a768f9" :weight bold :box (:line-width 2 :style released-button)))
+	("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
+	("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
+	))
 
 (setq org-todo-keywords
-      '((sequence "TODO(t)" "DOING(d)" "WAITING(w)" "FLEETING(f)" "|" "LONGTERM(l)" "CANCELED(c)" "DONE(f)")))
+      '((sequence "TODO(t/!)" "NEXT(n/!)" "WAITING(w@/!)" "FLEETING(f)" "PROJ(p)" "LONGTERM(l@/!)" "REPEAT(r)" "|" "CANCELED(c@/!)" "DONE(d/!)")))
+
+(setq org-log-repeat nil)
+(setq org-todo-repeat-to-state "REPEAT")
+
+(use-package smartparens
+    :config
+    (add-hook 'prog-mode-hook 'smartparens-mode))
+
+(setq org-outline-path-complete-in-steps nil)
+(setq org-completion-use-ido nil)
+(setq org-refile-use-outline-path 't)
+(setq org-refile-allow-creating-parent-nodes 'confirm)
+
+(defun org-refile-in-file ()
+  "Refile to a target within the current file."
+  (interactive)
+  (let ((org-refile-targets `(((,(buffer-file-name)) :maxlevel . 6))))
+    (call-interactively 'org-refile)))
+
+(setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+
+(use-package crux
+  :bind (("C-a" . crux-move-beginning-of-line)))
 
 (use-package try
     :ensure t)
@@ -365,20 +494,20 @@ is already narrowed."
     (beacon-mode 1))
 
 (use-package rainbow-mode
-  :ensure t
-  :init (add-hook 'prog-mode-hook 'rainbow-mode))
+  :config
+  (setq rainbow-x-colors nil)
+  (add-hook 'prog-mode-hook 'rainbow-mode))
 
 (use-package rainbow-delimiters
-  :ensure t
-  :init
-  (rainbow-delimiters-mode 1))
+  :config
+  (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 
 (use-package doom-themes
   :ensure t
   :config
   ;; Global settings (defaults)
   (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-        doom-themes-enable-italic t) ; if nil, italics is universally disabled
+	doom-themes-enable-italic t) ; if nil, italics is universally disabled
   (load-theme 'doom-one t)
 
   ;; Enable flashing mode-line on errors
@@ -395,6 +524,8 @@ is already narrowed."
 
 (use-package doom-modeline
   :ensure t
-  :init (doom-modeline-mode 1))
+  :hook (after-init . doom-modeline-mode))
+
+(setq doom-modeline-buffer-file-name-style 'truncate-all)
 
 (use-package all-the-icons :ensure t)

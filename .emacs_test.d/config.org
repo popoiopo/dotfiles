@@ -2,6 +2,25 @@
 #+DESCRIPTION: An org-babel based emacs configuration
 #+LANGUAGE: en
 #+PROPERTY: results silent
+* Learning resources
+|------------------------+-----------------------------------------------------------------------------|
+| Link                   | description                                                                 |
+|------------------------+-----------------------------------------------------------------------------|
+| C-h t                  | Emacs tutorial                                                              |
+| [[https://www.youtube.com/channel/UCDEtZ7AKmwS0_GNJog01D2g][Uncle Dave youtube]]     | Uncle Dave's youtube videos explain emacs configuration                     |
+| [[https://www.youtube.com/channel/UCxkMDXQ5qzYOgXPRnOBrp1w][Mike Zamansky youtube]]  | Has a great set of videos on Emacs, computer science etc                    |
+| [[https://www.udemy.com/course/getting-yourself-organized-with-org-mode/][Rainer Konig udemy]]     | Rainer Konig Udemy org-mode course, structured pdf and videos               |
+| [[https://www.youtube.com/channel/UCfbGTpcJyEOMwKP-eYz3_fg][Rainer Konig youtube]]   | Youtube channel also from Rainer                                            |
+| [[https://www.youtube.com/channel/UCQp2VLAOlvq142YN3JO3y8w][John Kitchin youtube]]   | This guy made org-ref and is an academic sensei                             |
+| [[http://kitchingroup.cheme.cmu.edu/blog/category/emacs/1/][Kitchin research group]] | John Kitchin's research group site has a ton of resources emacs related     |
+| C-h                    | This brings up a list with all types of help. E.g.C-h b describes bindings. |
+| C-h c COMMAND          | Display name of the function (brief description of the command)             |
+| C-h k COMMAND          | Display documentation of the function by typing the command                 |
+| C-h f FUNCTION NAME    | Display documentation of the function by typing the function name           |
+| C-h v                  | Display documentation of variables                                          |
+| C-h a                  | Type keyword to list all commands whose names contain that keyword          |
+| C-h i                  | Info - Read included manuals of installed packages                          |
+|------------------------+-----------------------------------------------------------------------------|
 * Explanation
 So! You've found yourself on my personal emacs configuration files. First of all, welcome! To start, there are a total of three files needed for my configuration.
 
@@ -9,11 +28,13 @@ So! You've found yourself on my personal emacs configuration files. First of all
 2. *config.org* that is this file! Here we do some basic configuration that does not need a lot from your part. It is just my bare-bones emacs without fancy (and very usefull) extra stuff. The only thing to get started here, is to write down the path to the folder in which these three files live.
 3. *config_custom.org* is where the magic happens. Well, extensive functionality that turns emacs from amazing to insane in the membrane! Here we also put shortcuts to other config files for quick access, we use org-journal, org-ref and org-roam (amazing combination). Basically everything that requires a bit more configuration on your part.
 
-Have fun, and don't forget to adjust the emacs path!   
+Have fun, and don't forget to adjust the emacs path!
 * File layout and paths
 Some standard files for configuring. The only important thing here to edit is *emacs-dir* to the directory of your emacs configuration. Don't forget!!!
 #+BEGIN_SRC emacs-lisp
   ;; General directories
+  (setq github-dir "~/github/")
+  (setq dropbox-dir "~/Dropbox/")
   (setq emacs-dir "~/.emacs_test.d/")
 
   ;; Configuration files
@@ -24,10 +45,35 @@ Some standard files for configuring. The only important thing here to edit is *e
   (setq amx-items (concat emacs-dir "amx-items"))
   (setq org-reveal-root "http://cdn.jsdelivr.net/reveal.js/3.0.0/")
 
-  ;; DOEN HET NOG NIET
+  ;; Backup files
   (setq backup-per-save (concat emacs-dir "backup/per-save"))
   (setq backup-per-session (concat emacs-dir "backup/per-session"))
-  (setq libre-office-path "/Applications/LibreOffice.app/Contents/MacOS/soffice")
+
+  ;; Configuration files
+  (setq zshrc-file "~/.zshrc")
+  (setq skhdrc-file "~/.skhdrc")
+  (setq qmk-keymap-file "~/qmk_firmware/keyboards/keebio/iris/keymaps/popoiopo/keymap.c")
+  (setq yabai-file "~/.yabairc")
+  (setq qutebrowser-file "~/.qutebrowser/qutemacs.py")
+
+  ;; Roam
+  (setq roamnotes-path (concat dropbox-dir "RoamNotes/"))
+  (setq roam-db-path "~/org-roam.db")
+
+  ;; More specific files
+  (setq org-journal-path (concat roamnotes-path "org-journal/"))
+  (setq journal-file (concat org-journal-path "2021.org"))
+
+  ;; Reference managing
+  (setq bib-folder-path (concat roamnotes-path "papers_and_articles/"))
+  (setq bib-org-file (concat bib-folder-path "references.org"))
+  (setq references-bib-file (concat bib-folder-path "references.bib"))
+
+  ;; GTD
+  (setq gtd-path (concat roamnotes-path "GTD/"))
+  (setq work-gtd-file (concat gtd-path "work.org"))
+  (setq personal-gtd-file (concat gtd-path "personal.org"))
+  (setq phone-gtd-file (concat gtd-path "phone.org"))
 #+END_SRC
 * Configuration
 ** Autocompletions
@@ -147,7 +193,7 @@ Small function to switch to previously used buffer.
     (interactive)
     (switch-to-buffer (other-buffer (current-buffer))))
 
-  (global-set-key (kbd "C-c b") #'er-switch-to-previous-buffer)
+  (global-set-key (kbd "C-c b") 'er-switch-to-previous-buffer)
 #+END_SRC
 *** switchwindow
 Make switching buffer with C-x o easier. It provides you with shortcuts on the homerow to which buffer you want to go. Otherwise, you'd need to cycle through them which is aweful if you have multiple buffers on the screen.
@@ -170,7 +216,7 @@ When using multiple buffers at the same time, sometimes it's nice to toggle a si
   (defun toggle-maximize-buffer () "Maximize buffer"
     (interactive)
     (if (= 1 (length (window-list)))
-        (jump-to-register '_) 
+        (jump-to-register '_)
       (progn
         (window-configuration-to-register '_)
         (delete-other-windows))))
@@ -192,6 +238,11 @@ If you split the window into two buffers, follow the new buffer. You make a new 
     (balance-windows)
     (other-window 1))
   (global-set-key (kbd "C-x 3") 'split-and-follow-vertically)
+#+END_SRC
+*** Rotate layout
+#+BEGIN_SRC emacs-lisp
+ (use-package rotate
+    :ensure t)
 #+END_SRC
 ** Custom functions
 *** Backup files
@@ -242,19 +293,33 @@ Small function to easily configure and reload the configuration file.
     (interactive)
     (org-babel-load-file (expand-file-name emacs-config-org-file)))
 #+END_SRC
+*** Save and exit buffer
+#+BEGIN_SRC emacs-lisp
+  (defun save-and-exit()
+    "Simple convenience function.
+      Saves the buffer of the current day's entry and kills the window
+      Similar to org-capture like behavior"
+    (interactive)
+    (save-buffer)
+    (kill-buffer-and-window))
+  (global-set-key (kbd "C-x C-S-s") 'save-and-exit)
+  (global-set-key (kbd "C-x C-M-S-s") 'org-save-all-org-buffers)
+#+END_SRC
 ** Custom keystrokes
 All (most) the custom key combinations that I use regularly.
 #+BEGIN_SRC emacs-lisp
   ;; set up my own map for files, folder and windows
   (define-prefix-command 'z-map)
   (global-set-key (kbd "C-z") 'z-map)
-  (define-key z-map (kbd "a") 'org-agenda-show-agenda-and-todo)
-  (define-key z-map (kbd "c") 'avy-goto-char)
+  (define-key z-map (kbd "a") 'org-agenda)
   (define-key z-map (kbd "n") 'narrow-or-widen-dwim)
-  (define-key z-map (kbd "t") 'toggle-transparency)
-  (define-key z-map (kbd "e") 'config-visit)
-  (define-key z-map (kbd "E") 'config-custom-visit)
-  (define-key z-map (kbd "r") 'config-reload)
+  (define-key z-map (kbd "C-t") 'toggle-transparency)
+
+  ;; Grammarly
+  (define-key z-map (kbd "g g") 'grammarly-pull)
+  (define-key z-map (kbd "g p") 'grammarly-push)
+
+  ;; Buffer movement
   (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
   (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
   (define-key z-map (kbd "<down>") 'shrink-window)
@@ -263,6 +328,43 @@ All (most) the custom key combinations that I use regularly.
   (define-key z-map (kbd "C-<down>") 'buf-move-down)
   (define-key z-map (kbd "C-<left>") 'buf-move-left)
   (define-key z-map (kbd "C-<right>") 'buf-move-right)
+  (define-key z-map (kbd "C-r") 'rotate-layout)
+  (define-key z-map (kbd "C-m v") 'rotate:main-vertical)
+  (define-key z-map (kbd "C-m h") 'rotate:main-horizontal)
+  (define-key z-map (kbd "C-e t") 'rotate:tiled)
+  (define-key z-map (kbd "C-e v") 'rotate:even-vertical)
+  (define-key z-map (kbd "C-e h") 'rotate:even-horizontal)
+
+  ;; UNCOMMENT IF YOU'RE NOT ME :)
+  (define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file zshrc-file)))
+  (define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file skhdrc-file)))
+  (define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file qmk-keymap-file)))
+  (define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file yabai-file)))
+  (define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file qutebrowser-file)))
+
+  ;; Bibfile and ref management files
+  (define-key z-map (kbd "b") (defun bibOrgEdit() (interactive) (find-file bib-org-file)))
+  (define-key z-map (kbd "C-b") (defun bibtexEdit() (interactive) (find-file references-bib-file)))
+
+  ;; GTD files
+  (define-key z-map (kbd "p") (defun work-GTD() (interactive) (find-file personal-gtd-file)))
+  (define-key z-map (kbd "w") (defun personal-GTD() (interactive) (find-file work-gtd-file)))
+  (define-key z-map (kbd "f") (defun phone-GTD() (interactive) (find-file phone-gtd-file)))
+  (define-key z-map (kbd "t") (defun phone-GTD() (interactive) (find-file journal-file)))
+  (define-key z-map (kbd "o p") 'org-focus-private)
+  (define-key z-map (kbd "o f") 'org-focus-phone)
+  (define-key z-map (kbd "o w") 'org-focus-work)
+  (define-key z-map (kbd "o a") 'org-focus-all-future)
+  (define-key z-map (kbd "o P") 'org-focus-past)
+  (define-key z-map (kbd "o A") 'org-focus-all)
+
+  ;; Emacs config files
+  (define-key z-map (kbd "E") 'config-custom-visit)
+  (define-key z-map (kbd "r") 'config-reload)
+  (define-key z-map (kbd "e") 'config-visit)
+
+  ;; Timer
+  (define-key z-map (kbd "k") 'show-msg-after-timer)
 
   ;; ORG extra keybinding
   ;; Store a reference link to an org mode location
@@ -294,6 +396,26 @@ All (most) the custom key combinations that I use regularly.
 
   ;; With control shift and a mouse-click add cursor
   (global-set-key (kbd "C-S-<mouse-1>") 'mc/add-cursor-on-click)
+
+  ;; Kill whole line
+  (global-set-key (kbd "C-S-k") 'kill-whole-line)
+
+  ;; Go anywhere in just a few strokes
+  (global-set-key (kbd "C-S-s") 'avy-goto-char)
+
+  ;; Refile within same file
+  (global-set-key (kbd "C-c w") 'org-refile-in-file)
+#+END_SRC
+** Encoding
+#+BEGIN_SRC emacs-lisp
+  ;;;;;;;;;;;;;;;;;;;;
+  ;;; set up unicode
+  (prefer-coding-system       'utf-8)
+  (set-default-coding-systems 'utf-8)
+  (set-terminal-coding-system 'utf-8)
+  (set-keyboard-coding-system 'utf-8)
+  (setq default-buffer-file-coding-system 'utf-8)
+  (setq x-select-request-type '(UTF8_STRING COMPOUND_TEXT TEXT STRING))
 #+END_SRC
 ** Exporting
 *** Org to latex blank lines
@@ -320,19 +442,23 @@ Make sure that export (C-e) to odt, will be formatted to a .doc document for wor
   ;; org v8 bundled with Emacs 24.4
   (setq org-odt-preferred-output-format "doc")
   ;; BTW, you can assign "pdf" in above variables if you prefer PDF format
-
   ;; Only OSX need below setup
   (defun my-setup-odt-org-convert-process ()
     (setq process-string "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")
     (interactive)
-    (let ((cmd libre-office-path))
-      (when (and (eq system-type 'darwin) (file-exists-p cmd))
-	;; org v7
-	(setq org-export-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")))
-	;; org v8
-	(setq org-odt-convert-processes '(("LibreOffice"  "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
-      ))
-  (my-setup-odt-org-convert-process)
+    (let ((cmd "/Applications/LibreOffice.app/Contents/MacOS/soffice"))
+       (when (and (eq system-type 'darwin) (file-exists-p cmd))
+         ;; org v7
+         (setq org-export-odt-convert-processes '(("LibreOffice" "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i")))
+         ;; org v8
+         (setq org-odt-convert-processes '(("LibreOffice"  "/Applications/LibreOffice.app/Contents/MacOS/soffice --headless --convert-to %f%x --outdir %d %i"))))
+       ))
+   (my-setup-odt-org-convert-process)
+#+END_SRC
+*** Export to Markdown
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "org"
+    '(require 'ox-md nil t))
 #+END_SRC
 *** Reveal.js
 Provide the option to export (C-e) an org-file to a reveal presentation.
@@ -343,15 +469,9 @@ Provide the option to export (C-e) an org-file to a reveal presentation.
   (use-package htmlize :ensure t)
 #+END_SRC
 *** Export to subdirectory
-Exporting brings about a lot of extra files and mess in the folder of your org file. This function checks if there is an exported-org-files folder, if not, it makes it, and every exported file is put in there.
+Exporting brings about a lot of extra files and mess in the folder of your org file. This variable basically deletes all the extra trash that is made in order to provide you with a pdf file. Keep things nice and clean! :D
 #+BEGIN_SRC emacs-lisp
-  (defun org-export-output-file-name-modified (orig-fun extension &optional subtreep pub-dir)
-    (unless pub-dir
-      (setq pub-dir "exported-org-files")
-      (unless (file-directory-p pub-dir)
-	(make-directory pub-dir)))
-    (apply orig-fun extension subtreep pub-dir nil))
-  (advice-add 'org-export-output-file-name :around #'org-export-output-file-name-modified)
+  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
 #+END_SRC
 *** Beamer
 #+BEGIN_SRC emacs-lisp
@@ -389,6 +509,12 @@ Use multi cursor editing easily. For keybindings, see [[*Custom keystrokes][Cust
 #+BEGIN_SRC emacs-lisp
   (require 'multiple-cursors)
 #+END_SRC
+*** expand-region
+#+BEGIN_SRC emacs-lisp
+  ;;expand region
+  (require 'expand-region)
+  (global-set-key (kbd "C-=") 'er/expand-region)
+#+END_SRC
 ** Org
 *** Org-bullets
 Small package that makes the org hierachy a little bit more appealing. The stars are changed into icons for example.
@@ -406,7 +532,7 @@ Some of the adjustments are *stolen* from [[https://explog.in/notes/writingsetup
   (setq org-hide-emphasis-markers t)                    ;; When making something bold *Hallo*, hide stars. Goes for all emphasis markers.
   (setq org-cycle-separator-lines 1)                    ;; Leave a single empty line between headers if there is one. Otherwise leave no room or make the empty lines belong to the previous header.
   (setq org-hide-leading-stars 't)                      ;; Hide the extra stars in front of a header (org-bullet displays nicer, but why add extra package)
-  (customize-set-variable 'org-blank-before-new-entry 
+  (customize-set-variable 'org-blank-before-new-entry
                           '((heading . nil)
                             (plain-list-item . nil)))   ;; Dont randomly remove newlines below headers
 #+END_SRC
@@ -414,6 +540,12 @@ Some of the adjustments are *stolen* from [[https://explog.in/notes/writingsetup
 Make standard size for org images. Otherwise they can become gigantic!
 #+BEGIN_SRC emacs-lisp
     (setq org-image-actual-width 600)
+#+END_SRC
+*** [#B] Priorities
+#+BEGIN_SRC emacs-lisp
+  (setq org-priority-highest ?A)
+  (setq org-priority-default ?C)
+  (setq org-priority-lowest ?E)
 #+END_SRC
 *** Org-babel
 #+BEGIN_SRC emacs-lisp
@@ -434,6 +566,9 @@ Small defaults to be changed as minor improvements. The changes are summarized n
   (setq-default display-line-numbers 'relative) ;; Setting the line numbers
   (when window-system (global-hl-line-mode t)) ;; Get a current line shadow in IDE
   (defalias 'yes-or-no-p 'y-or-n-p)   ;; Replace yes questions to y
+  (add-hook 'before-save-hook 'delete-trailing-whitespace) ;; I never want whitespace at the end of lines. Remove it on save.
+  (setq sentence-end-double-space nil);; Start a new sentence with just a single space instead of 2
+  (exec-path-from-shell-initialize)   ;; Fixes path issues on mac emacs.app so that same env of terminal is used
 #+END_SRC
 *** Hungry-delete
 Deletes all whitespace with a single delete of backspace.
@@ -451,9 +586,10 @@ Some minor modes that are turned on or off. Next to each, a short description is
   (global-auto-revert-mode 1)         ;; Make sure that you're always looking at the latest version of a file. Change file when changed on disk
   (delete-selection-mode 1)           ;; Remove text from selection instead of just inserting text
   (display-time-mode 1)               ;; Set clock on lower right side
-  (electric-pair-mode t)              ;; Enable electric pair mode. It autocompletes certain pairs. E.g., (), {}, [], <>
+  ;; (electric-pair-mode t)              ;; Enable electric pair mode. It autocompletes certain pairs. E.g., (), {}, [], <>
   (global-subword-mode 1)             ;; Cause M-f to move forward per capitalization within a word. E.g., weStopAtEveryCapital
   (global-visual-line-mode 1)                ;; Make sure that lines do not disapear at the right side of the screen but wrap around
+  (add-hook 'prog-mode-hook 'electric-pair-mode)
 #+END_SRC
 *** Popup kill-ring
 Show options out of the kill ring instead of cycling through each option.
@@ -473,16 +609,48 @@ Provides options for keystrokes. Super useful!
 *** TODOS
 #+BEGIN_SRC emacs-lisp
   (setq org-todo-keyword-faces
-        '(
-          ("DOING" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
-          ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
-          ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
-          ("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
-          ("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
-          ))
+	'(
+	  ("NEXT" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
+	  ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
+	  ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
+	  ("PROJ" . (:foreground "#a768f9" :weight bold :box (:line-width 2 :style released-button)))
+	  ("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
+	  ("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
+	  ))
 
   (setq org-todo-keywords
-        '((sequence "TODO(t)" "DOING(d)" "WAITING(w)" "FLEETING(f)" "|" "LONGTERM(l)" "CANCELED(c)" "DONE(f)")))
+	'((sequence "TODO(t/!)" "NEXT(n/!)" "WAITING(w@/!)" "FLEETING(f)" "PROJ(p)" "LONGTERM(l@/!)" "REPEAT(r)" "|" "CANCELED(c@/!)" "DONE(d/!)")))
+
+  (setq org-log-repeat nil)
+  (setq org-todo-repeat-to-state "REPEAT")
+#+END_SRC
+*** Coding
+When programming I like my editor to try to help me with keeping parentheses balanced.
+#+BEGIN_SRC emacs-lisp
+  (use-package smartparens
+      :config
+      (add-hook 'prog-mode-hook 'smartparens-mode))
+#+END_SRC
+*** Refile
+#+BEGIN_SRC emacs-lisp
+  (setq org-outline-path-complete-in-steps nil)
+  (setq org-completion-use-ido nil)
+  (setq org-refile-use-outline-path 't)
+  (setq org-refile-allow-creating-parent-nodes 'confirm)
+
+  (defun org-refile-in-file ()
+    "Refile to a target within the current file."
+    (interactive)
+    (let ((org-refile-targets `(((,(buffer-file-name)) :maxlevel . 6))))
+      (call-interactively 'org-refile)))
+
+  (setq org-refile-targets '((org-agenda-files :maxlevel . 3)))
+#+END_SRC
+*** Crux
+crux has useful functions extracted from Emacs Prelude. Set C-a to move to the first non-whitespace character on a line, and then to toggle between that and the beginning of the line.
+#+BEGIN_SRC emacs-lisp
+  (use-package crux
+    :bind (("C-a" . crux-move-beginning-of-line)))
 #+END_SRC
 ** Try package
 Have the option to try packages without actually installing them. If you do
@@ -510,16 +678,16 @@ Small package to provide an idea where in which buffer the cursor is atm by show
 Visualize color codings. So RGB will be colored in its respective color.
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-mode
-    :ensure t
-    :init (add-hook 'prog-mode-hook 'rainbow-mode))
+    :config
+    (setq rainbow-x-colors nil)
+    (add-hook 'prog-mode-hook 'rainbow-mode))
 #+END_SRC
 
 Make visual pairs of delimeters ({<[]>}) etc. Each level gets its own color so it's easy to spot which are pairs.
 #+BEGIN_SRC emacs-lisp
   (use-package rainbow-delimiters
-    :ensure t
-    :init
-    (rainbow-delimiters-mode 1))
+    :config
+    (add-hook 'prog-mode-hook 'rainbow-delimiters-mode))
 #+END_SRC
 *** Doom theme
 This causes emacs to look a lot better overall. [[https://github.com/hlissner/emacs-doom-themes][This package]] makes the coloring and font decissions, so you don't have to. There is a seperate package for the mode-line (the line that containts the time and which file etc.)
@@ -529,7 +697,7 @@ This causes emacs to look a lot better overall. [[https://github.com/hlissner/em
     :config
     ;; Global settings (defaults)
     (setq doom-themes-enable-bold t    ; if nil, bold is universally disabled
-          doom-themes-enable-italic t) ; if nil, italics is universally disabled
+	  doom-themes-enable-italic t) ; if nil, italics is universally disabled
     (load-theme 'doom-one t)
 
     ;; Enable flashing mode-line on errors
@@ -546,14 +714,16 @@ This causes emacs to look a lot better overall. [[https://github.com/hlissner/em
 
   (use-package doom-modeline
     :ensure t
-    :init (doom-modeline-mode 1))
+    :hook (after-init . doom-modeline-mode))
+
+  (setq doom-modeline-buffer-file-name-style 'truncate-all)
 #+END_SRC
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
   (use-package all-the-icons :ensure t)
 #+END_SRC
-* Shortcuts
-Here I provide some common shortcuts that I tend to use or want to remember. 
+* Shortcuts and how-to's
+Here I provide some common shortcuts that I tend to use or want to remember and other useful instructions.
 ** Shorthand notations
 There are some shorthands for certain keys, these are as follows:
 |-----------+----------------------------------------|
@@ -570,42 +740,156 @@ There are some shorthands for certain keys, these are as follows:
 |           | like this since Org treats this as a   |
 |           | new column                             |
 |-----------+----------------------------------------|
-** Navigation
-|---------------+-------------------------------------------------------------|
-| Shortcut      | Description                                                 |
-|---------------+-------------------------------------------------------------|
-| *Beginner*      |                                                             |
-|---------------+-------------------------------------------------------------|
-| PREFIX NUMBER | By typing the PREFIX (C-u) with a number after it followed  |
-|               | by a command, you in principle repeat the command number of |
-|               | times                                                       |
-| C-n           | Move cursor down (next)                                     |
-| C-p           | Move cursor up (previous)                                   |
-| C-b           | Move cursor left (back)                                     |
-| M-b           | Move cursor back one word                                   |
-| C-f           | Move cursor right (forward)                                 |
-| M-f           | Move cursor forward one word                                |
-| C-a           | Move cursor to beginning of line                            |
-| M-a           | Move cursor to beginning of current or previous sentence    |
-| C-e           | Move cursor to end of line                                  |
-| M-e           | Move cursor to end of current or next sentence              |
-| M-{           | Move cursor to beginning or previous paragraph              |
-| M-}           | Move cursor to end or next paragraph                        |
-|---------------+-------------------------------------------------------------|
-| *Intermediate*  |                                                             |
-|---------------+-------------------------------------------------------------|
-| M-g M-g       | Asks you a number and then goes to that line number         |
-|               |                                                             |
-|---------------+-------------------------------------------------------------|
+** Emacs
+*** General
+|-----------+------------------------------------------|
+| Shortcuts | Description                              |
+|-----------+------------------------------------------|
+| C-g       | Quit partially entered command           |
+| C-_       | Undo                                     |
+| C-x u     | Undo                                     |
+| C-/       | Undo                                     |
+| C-g C-/   | Undo in reverse direction (C-g reverses) |
+| C-x C-s   | save                                     |
+| C-x s     | Save some buffers                        |
+| M-w       | copy                                     |
+| C-w       | cut                                      |
+| C-y       | paste                                    |
+| C-x C-f   | Find a file                              |
+| C-x C-c   | Quit Emacs                               |
+| C-x C-=   | Zoom in                                  |
+| C-x C--   | Zoom out                                 |
+| C-s       | Search                                   |
+| C-r       | Reverse search                           |
+| M-=       | Show wordcount                           |
+| C-SPC     | Marker                                   |
+|-----------+------------------------------------------|
+*** Navigation
+|----------------+-----------------------------------------------------------------------|
+| Shortcut       | Description                                                           |
+|----------------+-----------------------------------------------------------------------|
+| *Beginner*       |                                                                       |
+|----------------+-----------------------------------------------------------------------|
+| C-u PREFIX     | The "numeric argument" indicates how many times to repeat the command |
+| C-v            | Move forward one screenful (next page)                                |
+| M-v            | Move back one screenful (previous page)                               |
+| C-u PREFIX C-v | Scroll text up by indicated number of lines                           |
+| C-u PREFIX M-v | Scroll text down by indicated number of lines                         |
+| C-f            | Move cursor a character to the right (forward)                        |
+| C-b            | Move cursor a character to left (back)                                |
+| M-f            | Move cursor forward one word                                          |
+| M-b            | Move cursor back one word                                             |
+| C-n            | Move cursor down one line (next)                                      |
+| C-p            | Move cursor up one line (previous)                                    |
+| C-a            | Move cursor to beginning of line                                      |
+| C-e            | Move cursor to end of line                                            |
+| M-a            | Move cursor to beginning of sentence                                  |
+| M-e            | Move cursor to end of current or next sentence                        |
+| M-}            | Move cursor to end or next paragraph                                  |
+| M-{            | Move cursor to beginning or previous paragraph                        |
+| C-l            | Move text around the cursor to the center of the screen               |
+| C-l C-l        | Move text around the cursor to the top of the screen                  |
+| C-l C-l C-l    | Move text around the cursor to the bottom of the screen               |
+| C-u PREFIX C-l | Move text around the cursor to the specified line                     |
+| M-<            | Move cursor to top of document                                        |
+| M->            | Move cursor to end of document                                        |
+| C-u C-SPC      | Move cursor back to previous position (after jump)                    |
+| C-z c          | avy-goto-char, go to any character in the screen by following a code  |
+|----------------+-----------------------------------------------------------------------|
+| *Intermediate*   |                                                                       |
+|----------------+-----------------------------------------------------------------------|
+| M-g M-g        | Asks you a number and then goes to that line number                   |
+|----------------+-----------------------------------------------------------------------|
+*** Buffers
+|-----------------------+----------------------------------------------------------------|
+| Shortcut              | Description                                                    |
+|-----------------------+----------------------------------------------------------------|
+| C-x C-b               | Show list of currently existing buffers                        |
+| C-x b                 | Switch to another buffer by typing its name                    |
+| C-x o                 | Jump to other buffer                                           |
+| C-x k                 | Kill buffer                                                    |
+| C-x 0                 | Kill selected buffer                                           |
+| C-x 1                 | Kill all buffers except selected one                           |
+| C-x 2                 | Split selected buffer horizontally                             |
+| C-x 3                 | Split selected buffer vertically                               |
+| C-x 4 C-f BUFFER NAME | Open new window with desired buffer in it                      |
+| C-x 5 2               | Open new frame                                                 |
+| C-x 5 0               | Remove selected frame                                          |
+| C-M-v                 | Scroll in non-selected buffer (without abandoning current one) |
+|-----------------------+----------------------------------------------------------------|
+*** Editing
+|----------------+------------------------------------------------------------|
+| Shortcut       | Description                                                |
+|----------------+------------------------------------------------------------|
+| <DEL>          | Delete the character before the cursor                     |
+| C-d            | Delete the character after the cursor                      |
+| M-<DEL>        | Kill the word before the cursor                            |
+| M-d            | Kill the word after the cursor                             |
+| C-k            | Kill from the cursor position to the end of the line       |
+| M-k            | Kill from the cursor position to the end of the sentence   |
+| C-0 C-k        | Kill from the cursor position to the beginning of the line |
+| C-S-<DEL>      | Delete the whole line, regarless of cursor position        |
+| C-u PREFIX C-k | Kills specified number of lines AND their contents         |
+| * text *       | *Bolds* text                                                 |
+| / text /       | /Italicizes/ text                                            |
+| _ text _       | _Underlines_ text                                            |
+| = text =       | Makes text =green= (without spaces)                          |
+| ~ text ~       | Makes text ~orange~ (without spaces)                         |
+|----------------+------------------------------------------------------------|
 ** Org
 *** Regular ORG
-| Shortcut | Description                             |
-|----------+-----------------------------------------|
-| C-S-RET  | Add extra todo checklist item to a list |
-| C-RET    | Add extra item to a list                |
-|----------+-----------------------------------------|
+|------------------+--------------------------------------------------------------|
+| Shortcut         | Description                                                  |
+|------------------+--------------------------------------------------------------|
+| C-c n f          | Create new file                                              |
+| C-RET            | Add headder                                                  |
+| M-S-RET          | Add extra todo checklist item to a list                      |
+| M-S-RET [@INDEX] | Add extra todo checklist item with desired numbering         |
+| C-c C-t          | Jump straight to the right TODO keyword                      |
+| C-LEFT / C-RIGHT | Cycle through TODO keywords                                  |
+| C-c C-c          | Check the checkbox                                           |
+| C-q              | Add a tagg to a header                                       |
+| C-c C-x S-o      | Make a TODO tree ordered (i.e. cannot set DONE out of order) |
+| C-c C-x C-c      | Change view to column view                                   |
+| C-c C-c          | WHEN IN COLUMN VIEW: change back                          |
+|------------------+--------------------------------------------------------------|
+*** Timer and clocking
+|-----------------+----------------------------------------------------------------------------------|
+| Shortcut        | Description timer                                                                |
+|-----------------+----------------------------------------------------------------------------------|
+| C-c C-x 0       | Use a up counting times (when prepended with C-u it prompts for offset of timer) |
+| C-c C-x ,       | Pause and resume timer (when prepended with C-u it stops timer)                  |
+| C-c C-x .       | When running timer, insert timestamp H:MM:SS                                     |
+| C-c C-x -       | When running timer, insert timestamp of form - H:MM:SS :: tekst                  |
+|-----------------+----------------------------------------------------------------------------------|
+| Shortcut        | Description clock                                                                |
+|-----------------+----------------------------------------------------------------------------------|
+| C-c C-x i       | Clock in                                                                         |
+| C-c C-x o       | Clock out                                                                        |
+| C-c C-x q       | Quit/cancel current clock                                                        |
+| C-c C-x j       | Go to current clock or last running clock                                        |
+| C-c C-x C-x     | Work again on last running clock                                                 |
+| C-u C-c C-x C-x | Get list of previously used clocks and choose which to work on                   |
+| l               | *IN AGENDA VIEW* to see clocked efforts at right timing                            |
+| C-c C-x d       | Show overlay in which total work time is calculated                              |
+| C-c C-c         | Remove overlay                                                                   |
+|-----------------+----------------------------------------------------------------------------------|
+
+*** Roam
+|----------+-------------|
+| Shortcut | Description |
+|----------+-------------|
+|----------+-------------|
 *** Tables
-Here are some shortcuts that I regularly use or want to have handy nearby. For a more exhaustive list, check [[https://orgmode.org/manual/Built_002din-Table-Editor.html#Built_002din-Table-Editor][the org table manual]].
+Here are some shortcuts that I regularly use or want to have handy nearby.  For a more exhaustive list, check [[https://orgmode.org/manual/Built_002din-Table-Editor.html#Built_002din-Table-Editor][the org table manual]].
+
+_How to make a table step by step:_
+1. Write the headers of the columns separated by commas
+2. Select the line with column names
+3. C-c |
+4. C-c RET
+5. C-c -
+6. Drag line using M-UP or M-DOWN
 
 |------------------------+------------------------------------------------------------------------|
 | Shortcut               | Description                                                            |
@@ -616,6 +900,7 @@ Here are some shortcuts that I regularly use or want to have handy nearby. For a
 | TAB                    | Re-align table, move to next field and create new row if needed        |
 | RET                    | Move cursor to next row or create a row (useful with horizontal lines) |
 | M-a or M-e             | Move to beginning or end of current field, or next field               |
+| M-RET                  | Split line vertically on overflow of column (split row into 2)         |
 |------------------------+------------------------------------------------------------------------|
 | *Regions*                |                                                                        |
 |------------------------+------------------------------------------------------------------------|
@@ -643,3 +928,56 @@ Here are some shortcuts that I regularly use or want to have handy nearby. For a
 | C-c `                  | Used if you want a seperate buffer to alter a field                    |
 |------------------------+------------------------------------------------------------------------|
 *** Exporting
+*** Journal
+All journal entries are registered in the Emacs Calendar. To see available journal entries do ~M-x calendar~. Bindings available in the =calendar-mode=:
+|-----------+------------------------------------------------------------------------|
+| Shortcut  | Description                                                            |
+|-----------+------------------------------------------------------------------------|
+| C-c C-c j | Use org-capture to start a new days entry and carry TODO's to this day |
+| C-z C-t   | Go to todays entry                                                     |
+| C-z C-j   | Make a new time-stamp in todays entry                                  |
+| C-c C-f   | Go to next journal file                                                |
+| C-c C-b   | Go to previoous journal file                                           |
+|-----------+------------------------------------------------------------------------|
+| j m       | mark entries in calendar                                               |
+| j r       | view an entry in a new buffer.                                         |
+| j d       | view an entry but do not switch to it.                                 |
+| j n       | add a new entry into the day’s file (creates the file if not present). |
+| j s w     | search in all entries of the current week.                             |
+| j s m     | search in all entries of the current month.                            |
+| j s y     | search in all entries of the current year.                             |
+| j s f     | search in all entries of all time.                                     |
+| j s F     | search in all entries in the future.                                   |
+| [         | go to previous day with journal entries.                               |
+| ]         | go to next day with journal entries.                                   |
+|           |                                                                        |
+|-----------+------------------------------------------------------------------------|
+** Agenda
+|--------------------+-------------------------------------|
+| Shortcut           | Description                         |
+|--------------------+-------------------------------------|
+| C-u NUMBER C-z a a | Open agenda for next NUMBER of days |
+| f                  | Move forward in agenda              |
+| b                  | Move backwards in agenda            |
+|--------------------+-------------------------------------|
+** Archiving and note taking
+|-------------+-------------------------------------|
+| Shortcut    | Description                         |
+|-------------+-------------------------------------|
+| C-c C-x C-s | Archive current TODO tree           |
+| C-c C-z     | Make a quick note in LOGBOOK drawer |
+|             |                                     |
+|-------------+-------------------------------------|
+
+** Step by step instructions
+_How to modify a config file or custom config file step by step:_
+1. C-z E to open config file
+2. Modify whatever you want
+3. C-x Cs to save file
+4. C-z r to reload the config file
+_How to create a new folder saved in dropbox_
+1. C-x C-f to create a new file
+2. ~/ to go to home directory
+3. ~/Dropbox to go to dropbox
+4. /file_name
+5. M-x RET RET to create a new directory (new folder) /or/ C-x C-s to create new file

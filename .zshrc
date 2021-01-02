@@ -124,6 +124,21 @@ source /usr/local/opt/powerlevel10k/powerlevel10k.zsh-theme
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 export PATH="/usr/local/opt/python/libexec/bin:/usr/local/sbin:$PATH"
 
-alias config='/usr/bin/git --git-dir=$HOME/dotfiles/ --work-tree=$HOME' 
+alias config='/usr/bin/git --git-dir=$HOME/dotfiles/ --work-tree=$HOME'
 alias edoom='emacs --with-profile doom'
 alias doom='~/doom-emacs/bin/doom'
+
+# Setup pyenv
+function setupPyenv() {
+    VENV=$1
+    export PATH="$HOME/.pyenv/bin:$PATH"
+    eval "$(pyenv init -)"
+    eval "$(pyenv virtualenv-init -)"
+    [ -n "$VENV" ] && pyenv activate $VENV
+}
+
+function lazygit() {
+    git add .
+    git commit -a -m "$1"
+    git push
+}

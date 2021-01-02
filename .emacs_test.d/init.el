@@ -33,12 +33,25 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(excorporate-configuration '("bas.chatel@radboudumc.nl" . "webmail.radboudumc.nl"))
  '(ivy-mode t)
  '(org-agenda-files
-   '("/Users/chatel/Dropbox/RoamNotes/org-journal/2020-10-09.org"))
+   '("/Users/chatel/Dropbox/RoamNotes/GTD/work.org" "/Users/chatel/Dropbox/RoamNotes/GTD/personal.org" "/Users/chatel/Dropbox/RoamNotes/GTD/phone.org"))
  '(org-blank-before-new-entry '((heading) (plain-list-item)))
+ '(org-clock-into-drawer "CLOCKING")
+ '(org-enforce-todo-checkbox-dependencies t)
+ '(org-enforce-todo-dependencies t)
+ '(org-log-into-drawer t)
+ '(org-log-repeat 'time)
+ '(org-log-reschedule 'time)
+ '(org-modules
+   '(ol-bbdb ol-bibtex ol-docview ol-eww ol-gnus org-habit ol-info ol-irc ol-mhe ol-rmail ol-w3m))
+ '(org-refile-allow-creating-parent-nodes 'confirm)
+ '(org-refile-targets '((org-agenda-files :tag . ":maxlevel . 3")))
+ '(org-refile-use-outline-path 'file)
+ '(org-track-ordered-property-with-tag t)
  '(package-selected-packages
-   '(doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring ox-twbs ox-reveal org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy)))
+   '(unicode-fonts org-fancy-priorities excorporate rotate blacken smartparens crux projectile company-lsp lsp-ui pyvenv ein org-drill doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring ox-twbs ox-reveal org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
