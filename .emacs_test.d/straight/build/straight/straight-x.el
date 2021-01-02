@@ -1,1 +1,0 @@
-/Users/chatel/.emacs_test.d/straight/repos/straight.el/straight-x.el
