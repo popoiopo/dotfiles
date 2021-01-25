@@ -2,6 +2,7 @@
 #+DESCRIPTION: An org-babel based emacs configuration
 #+LANGUAGE: en
 #+PROPERTY: results silent
+#+STARTUP: overview
 * Personalization
 Some personalization things.
 #+BEGIN_SRC emacs-lisp
@@ -15,18 +16,7 @@ Here we provide important directories and files. For example, I use Dropbox to s
 | |- Github
 | | |- Programming folders
 | |- Dropbox
-| | |- Org-roam directory
-| | | |- Ideas
-| | | |- Knowledge_base
-| | | |- Org-journal
-| | | |- Papers_and_articles
-| | | |- Personal
-| | | |- Refs
-| | | |- Snippets
-| | | |- Work
-| | |- Bibliography
-| | |- PhD
-
+| | |- Check dropbox README.org at root
 * Configuration
 ** Management - Knowledge
 *** Citations
@@ -75,103 +65,103 @@ Org ref is a powerful reference manager written fully in Elisp. Check [[https://
   (setq org-format-latex-options (plist-put org-format-latex-options :scale 2.5))
 
 #+END_SRC
-
+*** PDF annotations to org
+#+BEGIN_SRC emacs-lisp
+  (defun process-annotations ()
+    (interactive)
+    (let* ((default-directory "~/Dropbox/bibliography"))
+      (shell-command "python runAllAnnot.py")
+      (org-roam-db-build-cache)))
+#+END_SRC
 *** Org roam
 One of the cornerstones of my knowledge management. This is based on Roam research or zettelkasten.
 #+BEGIN_SRC emacs-lisp
-  (use-package org-roam
-        :ensure t
-        :hook
-        (after-init . org-roam-mode)
-        :custom
-        (org-roam-directory  roamnotes-path)
-        (org-roam-db-location roam-db-path)
-        :bind (:map org-roam-mode-map
-                (("C-c n l" . org-roam)                          ;; Show backlinks in an extra buffer on the left
-                 ("C-c n f" . orb-find-non-ref-file)             ;; Find your notes easily through the database
-                 ("C-c n g" . org-roam-graph-show))              ;; Show your knowledge-base in graph shape
-                :map org-mode-map
-                (("C-c n i" . orb-insert-non-ref))               ;; Insert a link to a note
-                (("C-c n I" . org-roam-insert-immediate))))      ;; Same as previous
+    (use-package org-roam
+	  :ensure t
+	  :hook
+	  (after-init . org-roam-mode)
+	  :custom
+	  (org-roam-directory  roamnotes-path)
+	  (org-roam-db-location roam-db-path)
+	  :bind (:map org-roam-mode-map
+		  (("C-c n l" . org-roam)                          ;; Show backlinks in an extra buffer on the left
+		   ("C-c n f" . orb-find-non-ref-file)             ;; Find your notes easily through the database
+		   ("C-c n g" . org-roam-graph-show))              ;; Show your knowledge-base in graph shape
+		  :map org-mode-map
+		  (("C-c n i" . orb-insert-non-ref))               ;; Insert a link to a note
+		  (("C-c n I" . org-roam-insert-immediate))))      ;; Same as previous
 
-  (setq org-roam-capture-templates
-        '(
-          ;; Alle informatie met referenties naar waar ik het vandaan heb. Dit wordt het grootste deel die concepten uitlegt met referenties naar snippets.
-          ("k" "Knowledge base" plain (function org-roam--capture-get-point)
-          "%?"
-          :file-name "knowledge_base/%<%Y%m%d%H%M%S>-${slug}"
-          :head "#+title: ${title}\n\n- tags :: [[file:20200729175519-knowledge_base.org][Knowledge base]]\n\n* "
-          :unnarrowed t)
+    (setq org-roam-capture-templates
+	  '(
+	    ;; Alle informatie met referenties naar waar ik het vandaan heb. Dit wordt het grootste deel die concepten uitlegt met referenties naar snippets.
+	    ("k" "Knowledge base" plain (function org-roam--capture-get-point)
+	    "%?"
+	    :file-name "knowledge_base/%<%Y%m%d%H%M%S>-${slug}"
+	    :head "#+title: ${title}\n\n- tags :: [[file:20200729175519-knowledge_base.org][Knowledge base]]\n\n* "
+	    :unnarrowed t)
 
-          ;; Hier staat alle informatie over mensen die ik ken; waar ik ze van ken, waar ze goed in zijn, verjaardag, etc. Dit functioneert als basis waar ik naar kan refereren als ik hulp nodig heb van iemand en ook voor leuk dat ik kan terug zien wat ik met die persoon heb gedaan vanuit de org-journal folder.
-          ("p" "Personal" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "personal/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags ::  [[file:20200729175551-personal.org][personal]]\n- birthday :: \n- Contact\n  - Phonenumber :: \n  - Email :: \n\n* "
-            :unnarrowed t)
+	    ;; Hier staat alle informatie over mensen die ik ken; waar ik ze van ken, waar ze goed in zijn, verjaardag, etc. Dit functioneert als basis waar ik naar kan refereren als ik hulp nodig heb van iemand en ook voor leuk dat ik kan terug zien wat ik met die persoon heb gedaan vanuit de org-journal folder.
+	    ("p" "Personal" plain (function org-roam--capture-get-point)
+	      "%?"
+	      :file-name "personal/%<%Y%m%d%H%M%S>-${slug}"
+	      :head "#+title: ${title}\n\n- tags ::  [[file:20200729175551-personal.org][personal]]\n- birthday :: \n- Contact\n  - Phonenumber :: \n  - Email :: \n\n* "
+	      :unnarrowed t)
 
-          ;; Hier komen alle interessante ideeën die niet perse met literatuur versterkt worden, niet goed uitgewerkt zijn of simpelweg een interessante notion is waar ik later iets mee kan.
-          ("i" "Ideas" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "ideas/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200729175615-ideas.org][Ideas]]\n\n* "
-            :unnarrowed t)
+	    ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
+	    ("a" "Papers and Articles" plain (function org-roam--capture-get-point)
+	      "%?"
+	      :file-name "papers_and_articles/%<%Y%m%d%H%M%S>-${slug}"
+	      :head "#+title: ${title}\n\n- tags :: [[file:20200729175758-papers_and_articles.org][papers_and_articles]]\n\n* "
+	      :unnarrowed t)
 
-          ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
-          ("a" "Papers and Articles" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "papers_and_articles/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200729175758-papers_and_articles.org][papers_and_articles]]\n\n* "
-            :unnarrowed t)
+	    ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
+	    ("w" "Work" plain (function org-roam--capture-get-point)
+	      "%?"
+	      :file-name "work/%<%Y%m%d%H%M%S>-${slug}"
+	      :head "#+title: ${title}\n\n- tags :: [[file:20200902142233-work.org][work]]\n\n* "
+	      :unnarrowed t)
 
-          ;; Alle volledig uitgewerkte papers, blog posts, werken die ik doe (nog even nadenken of dit privé moet of niet, denk het wel want publicaties en protocols etc)
-          ("w" "Work" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "work/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200902142233-work.org][work]]\n\n* "
-            :unnarrowed t)
+	    ;; Hier staan, labelled per programmeer taal en functie (optimization, plotting, etc.), de snippets voor bepaalde methodes, wiskundige formules die uitgeprogrammeerd zijn etc.
+	    ("s" "Snippets" plain (function org-roam--capture-get-point)
+	      "%?"
+	      :file-name "snippets/%<%Y%m%d%H%M%S>-${slug}"
+	      :head "#+title: ${title}\n\n- tags :: [[file:20200729175823-snippets.org][snippets]]\n\n* "
+	      :unnarrowed t)
+	    )
+	  )
 
-          ;; Hier staan, labelled per programmeer taal en functie (optimization, plotting, etc.), de snippets voor bepaalde methodes, wiskundige formules die uitgeprogrammeerd zijn etc.
-          ("s" "Snippets" plain (function org-roam--capture-get-point)
-            "%?"
-            :file-name "snippets/%<%Y%m%d%H%M%S>-${slug}"
-            :head "#+title: ${title}\n\n- tags :: [[file:20200729175823-snippets.org][snippets]]\n\n* "
-            :unnarrowed t)
-          )
-        )
-
-  ;; On search for notes, prepend its respective directory name
-  (setq org-roam-tag-sources '(prop last-directory))
+    ;; On search for notes, prepend its respective directory name
+    (setq org-roam-tag-sources '(prop last-directory))
 #+END_SRC
 ** Management - Workflow/project
 *** Tags
 #+BEGIN_SRC emacs-lisp
-  (setq org-tag-alist '(("CODING" . ?c) ("PHONING" . ?p) ("EMAILING" . ?e) ("WRITING" . ?w) ("THINKING" . ?t) ("READING" . ?r) ("DOING" . ?d)))
+  (setq org-tag-alist '(("CODING" . ?c) ("PHONING" . ?p) ("EMAILING" . ?e) ("WRITING" . ?w) ("THINKING" . ?t) ("READING" . ?r) ("DOING" . ?d) ("HEALTH" . ?h)))
 #+END_SRC
 *** Agenda
 #+BEGIN_SRC emacs-lisp
-  (setq org-agenda-files '(("~/Dropbox/RoamNotes/GTD/work.org")
-			   ("~/Dropbox/RoamNotes/GTD/personal.org")
-			   ("~/Dropbox/RoamNotes/GTD/phone.org")))
+  (setq org-agenda-files '(("~/Dropbox/roam_notes/gtd/work.org")
+			   ("~/Dropbox/roam_notes/gtd/personal.org")
+			   ("~/Dropbox/roam_notes/gtd/phone.org")))
 
   (defun org-focus-private() "Set focus on private things."
 	 (interactive)
-	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/personal.org")))
+	 (setq org-agenda-files '("~/Dropbox/roam_notes/gtd/personal.org")))
   (defun org-focus-phone() "Set focus on things on mobile."
 	 (interactive)
-	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/phone.org")))
+	 (setq org-agenda-files '("~/Dropbox/roam_notes/gtd/phone.org")))
   (defun org-focus-work() "Set focus on work things."
 	 (interactive)
-	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org")))
+	 (setq org-agenda-files '("~/Dropbox/roam_notes/gtd/work.org")))
   (defun org-focus-past() "Set focus on past things."
 	 (interactive)
-	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org_archive" "~/Dropbox/RoamNotes/GTD/personal.org_archive")))
+	 (setq org-agenda-files '("~/Dropbox/roam_notes/gtd/work.org_archive" "~/Dropbox/roam_notes/gtd/personal.org_archive")))
   (defun org-focus-all-future() "Set focus on all future things."
 	 (interactive)
-	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org" "~/Dropbox/RoamNotes/GTD/phone.org" "~/Dropbox/RoamNotes/GTD/personal.org")))
+	 (setq org-agenda-files '("~/Dropbox/roam_notes/gtd/work.org" "~/Dropbox/roam_notes/gtd/phone.org" "~/Dropbox/roam_notes/gtd/personal.org")))
   (defun org-focus-all() "Set focus on all things."
 	 (interactive)
-	 (setq org-agenda-files '("~/Dropbox/RoamNotes/GTD/work.org" "~/Dropbox/RoamNotes/GTD/phone.org" "~/Dropbox/RoamNotes/GTD/personal.org" "~/Dropbox/RoamNotes/GTD/work.org_archive" "~/Dropbox/RoamNotes/GTD/personal.org_archive")))
+	 (setq org-agenda-files '("~/Dropbox/roam_notes/gtd/work.org" "~/Dropbox/roam_notes/gtd/phone.org" "~/Dropbox/roam_notes/gtd/personal.org" "~/Dropbox/roam_notes/gtd/work.org_archive" "~/Dropbox/roam_notes/gtd/personal.org_archive")))
 #+END_SRC
 *** Org Journal
 A big part of my workflow. In the beginning of each day I create a journal entry that uses org-journal to take all my current TODOs to the new day. The new entry is filled with org-journal-file-header-func as a template, carries over all elements that are defined in org-journal-carryover-items and puts them under the TODO header.
@@ -240,19 +230,23 @@ Org capture makes creating a template from org a little easier. It creates a new
 		  'org-capture)
 
   (setq org-capture-templates '(("j" "Journal entry" entry (file+olp+datetree
-							    "~/Dropbox/RoamNotes/org-journal/2021.org")
+							    "~/Dropbox/roam_notes/org-journal/2021.org")
 				 (file "~/.emacs_test.d/capture/journal.txt")
 				 :empty-lines-after 1)
+				("s" "Start of the day Journal entry" entry (file+olp+datetree
+							      "~/Dropbox/roam_notes/org-journal/2021.org")
+				   (file "~/.emacs_test.d/capture/day_start_journal.txt")
+				   :empty-lines-after 1)
 				("r" "Reading entry" entry (file+headline
-							    "~/Dropbox/RoamNotes/GTD/work.org" "Leeslijst")
+							    "~/Dropbox/roam_notes/gtd/work.org" "Leeslijst")
 				 (file "~/.emacs_test.d/capture/reading.txt")
 				 :empty-lines-after 1)
 				("t" "TODO" entry (file
-						   "~/Dropbox/RoamNotes/GTD/work.org")
+						   "~/Dropbox/roam_notes/gtd/work.org")
 				 (file "~/.emacs_test.d/capture/todo.txt")
 				 :empty-lines-after 0)
 				("b" "BibEntry" entry (file+headline
-						       "~/Dropbox/RoamNotes/papers_and_articles/references.org" "New")
+						       "~/Dropbox/roam_notes/papers_and_articles/references.org" "New")
 				 (file "~/.emacs_test.d/capture/refE.txt")
 				 :empty-lines-after 1)
 				 ))

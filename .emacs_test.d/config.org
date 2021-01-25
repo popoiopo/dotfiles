@@ -2,6 +2,7 @@
 #+DESCRIPTION: An org-babel based emacs configuration
 #+LANGUAGE: en
 #+PROPERTY: results silent
+#+STARTUP: overview
 * Learning resources
 |------------------------+-----------------------------------------------------------------------------|
 | Link                   | description                                                                 |
@@ -57,7 +58,7 @@ Some standard files for configuring. The only important thing here to edit is *e
   (setq qutebrowser-file "~/.qutebrowser/qutemacs.py")
 
   ;; Roam
-  (setq roamnotes-path (concat dropbox-dir "RoamNotes/"))
+  (setq roamnotes-path (concat dropbox-dir "roam_notes/"))
   (setq roam-db-path "~/org-roam.db")
 
   ;; More specific files
@@ -70,7 +71,7 @@ Some standard files for configuring. The only important thing here to edit is *e
   (setq references-bib-file (concat bib-folder-path "references.bib"))
 
   ;; GTD
-  (setq gtd-path (concat roamnotes-path "GTD/"))
+  (setq gtd-path (concat roamnotes-path "gtd/"))
   (setq work-gtd-file (concat gtd-path "work.org"))
   (setq personal-gtd-file (concat gtd-path "personal.org"))
   (setq phone-gtd-file (concat gtd-path "phone.org"))
@@ -319,6 +320,9 @@ All (most) the custom key combinations that I use regularly.
   (define-key z-map (kbd "g g") 'grammarly-pull)
   (define-key z-map (kbd "g p") 'grammarly-push)
 
+  ;; Personal PDF annotation extraction workflow PDF highlight to org
+  (define-key z-map (kbd "u") 'process-annotations)
+
   ;; Buffer movement
   (define-key z-map (kbd "<left>") 'shrink-window-horizontally)
   (define-key z-map (kbd "<right>") 'enlarge-window-horizontally)
@@ -350,13 +354,15 @@ All (most) the custom key combinations that I use regularly.
   (define-key z-map (kbd "p") (defun work-GTD() (interactive) (find-file personal-gtd-file)))
   (define-key z-map (kbd "w") (defun personal-GTD() (interactive) (find-file work-gtd-file)))
   (define-key z-map (kbd "f") (defun phone-GTD() (interactive) (find-file phone-gtd-file)))
-  (define-key z-map (kbd "t") (defun phone-GTD() (interactive) (find-file journal-file)))
+  (define-key z-map (kbd "t") (defun journalling() (interactive) (find-file journal-file)))
   (define-key z-map (kbd "o p") 'org-focus-private)
   (define-key z-map (kbd "o f") 'org-focus-phone)
   (define-key z-map (kbd "o w") 'org-focus-work)
   (define-key z-map (kbd "o a") 'org-focus-all-future)
   (define-key z-map (kbd "o P") 'org-focus-past)
   (define-key z-map (kbd "o A") 'org-focus-all)
+
+  ;; Link to clipboard
 
   ;; Emacs config files
   (define-key z-map (kbd "E") 'config-custom-visit)
@@ -369,6 +375,7 @@ All (most) the custom key combinations that I use regularly.
   ;; ORG extra keybinding
   ;; Store a reference link to an org mode location
   (global-set-key (kbd "C-c l") 'org-store-link)
+  (define-key z-map (kbd "l") 'my/copy-idlink-to-clipboard)
 
   ;; Add an extra cursor above or below current cursor
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
@@ -405,6 +412,22 @@ All (most) the custom key combinations that I use regularly.
 
   ;; Refile within same file
   (global-set-key (kbd "C-c w") 'org-refile-in-file)
+#+END_SRC
+** Diranged
+Package to preview contents of a file in dired (C-x C-b) while scrolling
+#+BEGIN_SRC emacs-lisp
+  (let ((default-directory  "~/.emacs_test.d/custom/"))
+    (normal-top-level-add-to-load-path '("."))
+    (normal-top-level-add-subdirs-to-load-path))
+
+  (use-package diranged
+    :bind (:map dired-mode-map ("r" . diranged-mode)))
+
+  (setq diranged-disable-on-quit t     ; disable diranged on quit-window
+	diranged-kill-on-move t        ; cleanup spawed buffers as we go
+	diranged-kill-on-exit t        ; cleanup spawed buffers on exit
+	diranged-max-file-size 10      ; MB size limit for previewing files
+	diranged-restore-windows t)    ; restore windows state on exit
 #+END_SRC
 ** Encoding
 #+BEGIN_SRC emacs-lisp
@@ -471,7 +494,7 @@ Provide the option to export (C-e) an org-file to a reveal presentation.
 *** Export to subdirectory
 Exporting brings about a lot of extra files and mess in the folder of your org file. This variable basically deletes all the extra trash that is made in order to provide you with a pdf file. Keep things nice and clean! :D
 #+BEGIN_SRC emacs-lisp
-  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl")))
+  (setq org-latex-logfiles-extensions (quote ("lof" "lot" "tex~" "aux" "idx" "log" "out" "toc" "nav" "snm" "vrb" "dvi" "fdb_latexmk" "blg" "brf" "fls" "entoc" "ps" "spl" "bbl" "glo" "ilg" "ist" "ind")))
 #+END_SRC
 *** Beamer
 #+BEGIN_SRC emacs-lisp
@@ -516,14 +539,6 @@ Use multi cursor editing easily. For keybindings, see [[*Custom keystrokes][Cust
   (global-set-key (kbd "C-=") 'er/expand-region)
 #+END_SRC
 ** Org
-*** Org-bullets
-Small package that makes the org hierachy a little bit more appealing. The stars are changed into icons for example.
-#+BEGIN_SRC emacs-lisp
-  (use-package org-bullets
-    :ensure t
-    :config
-    (add-hook 'org-mode-hook (lambda () (org-bullets-mode))))
-#+END_SRC
 *** Writing improvements
 Some of the adjustments are *stolen* from [[https://explog.in/notes/writingsetup.html][this guy]]. It mainly revolves around using screenspace efficiently instead of randomly adding whitespace, or not displaying whitespace where there actually is whitespace.
 #+BEGIN_SRC emacs-lisp
@@ -551,7 +566,17 @@ Make standard size for org images. Otherwise they can become gigantic!
 #+BEGIN_SRC emacs-lisp
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((python . t)))
+   '((emacs-lisp . t) (python . t) (shell . t) (dot . t)))
+#+END_SRC
+*** Org capture
+When initializing an org-capture, it eats up basically your whole layout. This piece of code prevents that and just uses an existing window, albeit somewhat random as to which one is chosen.
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-capture-place-template-dont-delete-windows (oldfun args)
+    (cl-letf (((symbol-function 'delete-other-windows) 'ignore))
+      (apply oldfun args)))
+
+  (with-eval-after-load "org-capture"
+    (advice-add 'org-capture-place-template :around 'my-org-capture-place-template-dont-delete-windows))
 #+END_SRC
 ** Standards (minor modes and minor improvements)
 *** Alter annoying defaults
@@ -569,6 +594,7 @@ Small defaults to be changed as minor improvements. The changes are summarized n
   (add-hook 'before-save-hook 'delete-trailing-whitespace) ;; I never want whitespace at the end of lines. Remove it on save.
   (setq sentence-end-double-space nil);; Start a new sentence with just a single space instead of 2
   (exec-path-from-shell-initialize)   ;; Fixes path issues on mac emacs.app so that same env of terminal is used
+  (setq org-agenda-window-setup 'current-window) ;; When opening the agenda, open it in current window instead of messing up the layout
 #+END_SRC
 *** Hungry-delete
 Deletes all whitespace with a single delete of backspace.
@@ -611,6 +637,8 @@ Provides options for keystrokes. Super useful!
   (setq org-todo-keyword-faces
 	'(
 	  ("NEXT" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
+	  ("MEETING" . (:foreground "#b28e00" :weight bold :box (:line-width 2 :style released-button)))
+	  ("DELEGATED" . (:foreground "#b28e00" :weight bold :box (:line-width 2 :style released-button)))
 	  ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
 	  ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
 	  ("PROJ" . (:foreground "#a768f9" :weight bold :box (:line-width 2 :style released-button)))
@@ -619,7 +647,7 @@ Provides options for keystrokes. Super useful!
 	  ))
 
   (setq org-todo-keywords
-	'((sequence "TODO(t/!)" "NEXT(n/!)" "WAITING(w@/!)" "FLEETING(f)" "PROJ(p)" "LONGTERM(l@/!)" "REPEAT(r)" "|" "CANCELED(c@/!)" "DONE(d/!)")))
+	'((sequence "TODO(t/!)" "NEXT(n/!)" "DELEGATED(o)" "WAITING(w@/!)" "FLEETING(f)" "PROJ(p)" "MEETING(m)" "LONGTERM(l@/!)" "REPEAT(r)" "|" "CANCELED(c@/!)" "DONE(d/!)")))
 
   (setq org-log-repeat nil)
   (setq org-todo-repeat-to-state "REPEAT")
@@ -721,6 +749,34 @@ This causes emacs to look a lot better overall. [[https://github.com/hlissner/em
 *** all-the-icons
 #+BEGIN_SRC emacs-lisp
   (use-package all-the-icons :ensure t)
+#+END_SRC
+** Link to clipboard
+#+BEGIN_SRC emacs-lisp
+  (defun my/copy-idlink-to-clipboard() "Copy an ID link with the headline to killring, if no ID is there then create a new unique ID. This function works only in org-mode or org-agenda buffers.
+  The purpose of this function is to easily construct id:-links to org-mode items. If its assigned to a key it saves you marking the text and copying to the killring."
+	 (interactive)
+	 (when (eq major-mode 'org-agenda-mode)
+	   (org-agenda-show)
+	   (org-agenda-goto))
+	 (when (eq major-mode 'org-mode) ; do this only in org-mode buffers
+	   (setq mytmphead (nth 4 (org-heading-components)))
+	   (setq mytmpid (funcall 'org-id-get-create))
+	   (setq mytmplink (format "[[id:%s][%s]]" mytmpid mytmphead)) (kill-new mytmplink)
+	   (message "Copied %s to killring (clipboard)" mytmplink)
+	   ))
+#+END_SRC
+** Clear checkboxes when done with repeated tasks
+#+BEGIN_SRC emacs-lisp
+  (defun org-reset-checkbox-state-maybe () "Reset all checkboxes in an entry
+  if the `RESET_CHECK_BOXES' property is set" (interactive "∗")
+  (if (org-entry-get (point) "RESET_CHECK_BOXES")
+      (org-reset-checkbox-state-subtree)))
+  (defun org-checklist ()
+    (when (member org-state org-done-keywords)
+      (org-reset-checkbox-state-maybe)))
+  (defun my-clockfiles () (append org-agenda-files
+				  (file-expand-wildcards "~/Dropbox/org/track∗.org")))
+  (add-hook 'org-after-todo-state-change-hook 'org-checklist)
 #+END_SRC
 * Shortcuts and how-to's
 Here I provide some common shortcuts that I tend to use or want to remember and other useful instructions.

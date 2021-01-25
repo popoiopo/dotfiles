@@ -8,7 +8,6 @@
 - Added: %U
 :END:
 
-#+BEGIN_SRC bibtex
-%^{Bibtex entry}
-#+BEGIN_SRC
+#+begin_src bibtex
 %?
+#+begin_src

@@ -1,9 +1,11 @@
-* LONGTERM Book: %^{Author} - %^{Titel}
+* LONGTERM [#%^{Importance (A B C D E):}] %(ido-completing-read "Select from list: " '("BOOK" "PAPER" "BLOG")): %^{Author} - %^{Titel}
 :PROPERTIES:
 :Author: %\1
 :Title:  %\2
+:Context: %^{Why do you want to read this?}
+:EFFORT: %(ido-completing-read "Select from list: " '("0:10" "0:30" "1:00" "2:00" "5:00"))
+:Resources: %?
 :END:
-- Reason for reading: %?
 :LOGBOOK:
 - Added: %U
 :END:

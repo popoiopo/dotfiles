@@ -42,7 +42,7 @@ c.input.insert_mode.auto_enter = False
 c.input.insert_mode.auto_leave = False
 c.input.insert_mode.plugins = False
 
-# Get rid of the status bar 
+# Get rid of the status bar
 # c.statusbar.hide = True
 
 ## Format to use for the tab title. The following placeholders are
@@ -102,7 +102,7 @@ c.content.pdfjs = True
 # Spellchecker
 # c.spellcheck.languages = ["en-US", "nl-NL"]
 
-# Set sites to function as search engines from console 
+# Set sites to function as search engines from console
 c.url.searchengines = {
     'DEFAULT': 'https://duckduckgo.com/?q={}',
     're': 'https://www.reddit.com/r/{}',
@@ -129,7 +129,7 @@ c.bindings.commands['normal'] = {
         # Bookmarks
         '<ctrl-c>a': 'bookmark-add',
         '<ctrl-c>d': 'bookmark-del',
-    
+
 	# Navigation
 	'<ctrl-v>': 'scroll-page 0 0.5',
 	'<alt-v>': 'scroll-page 0 -0.5',
@@ -150,7 +150,7 @@ c.bindings.commands['normal'] = {
         # qute-pass
         '<shift-alt-p>': 'set-cmd-text -s :spawn --userscript qute-lastpass --password-only',
         '<ctrl-alt-p>': 'set-cmd-text -s :spawn --userscript qute-lastpass --username-only',
-    
+
 	# quickmarks
 	'<ctrl-q>l': 'set-cmd-text -s :quickmark-load ',
 	'<ctrl-q>a': 'set-cmd-text -s :quickmark-add ',
@@ -161,7 +161,7 @@ c.bindings.commands['normal'] = {
         '<ctrl-c>t': 'yank title -s',
         '<ctrl-c>d': 'yank domain -s',
         '<ctrl-c>o': 'yank inline [[{url}][{title}]] -s',
-    
+
 	# hinting (shows all links)
 	'<alt-s>': 'hint all',
         '<alt-l>f': 'fullscreen',
@@ -176,7 +176,7 @@ c.bindings.commands['normal'] = {
 	'<alt-l><alt-p>': 'hint inputs --first',
 	'<alt-l>w': 'hint --rapid links window',
 	'<alt-l>o': 'hint links fill :open -t -r {hint-url}',
-    
+
 	# history
 	# FIXME maybe this should be <C-b> <C-n>? Or would that be too confusing?
 	'<ctrl-]>': 'forward',
@@ -199,13 +199,14 @@ c.bindings.commands['normal'] = {
         '<ctrl-x><ctrl-n>': 'tab-give',
         '<ctrl-x><ctrl-t>': 'set-cmd-text -s :tab-take',
         '<ctrl-x><ctrl-k>': 'set-cmd-text -s :tab-take --keep',
+        '<ctrl-x><ctrl-g>': 'set-cmd-text -s :tab-give',
         '<ctrl-x><ctrl-f>': 'set-cmd-text -s :open -t ',
         '<ctrl-x><ctrl-shift-f>': 'set-cmd-text -s :open ',
 	'<alt-1>': 'tab-focus 1',
 	'<alt-2>': 'tab-focus 2',
 	'<alt-3>': 'tab-focus 3',
 	'<alt-4>': 'tab-focus 4',
-    
+
 	'<alt-5>': 'tab-focus 5',
 	'<alt-6>': 'tab-focus 6',
 	'<alt-7>': 'tab-focus 7',
@@ -217,7 +218,7 @@ c.bindings.commands['normal'] = {
         '<ctrl-=>': 'zoom-in',
         '<ctrl-->': 'zoom-out',
         '<ctrl-alt-=>': 'zoom',
-      
+
         # Reload config
         '<ctrl-c>r': 'config-source',
 
