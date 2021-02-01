@@ -53,9 +53,27 @@
  '(org-refile-allow-creating-parent-nodes 'confirm)
  '(org-refile-targets '((org-agenda-files :tag . ":maxlevel . 3")))
  '(org-refile-use-outline-path 'file)
+ '(org-src-lang-modes
+   '(("C" . c)
+     ("C++" . c++)
+     ("asymptote" . asy)
+     ("bash" . sh)
+     ("beamer" . latex)
+     ("calc" . fundamental)
+     ("cpp" . c++)
+     ("ditaa" . artist)
+     ("dot" . fundamental)
+     ("elisp" . emacs-lisp)
+     ("ocaml" . tuareg)
+     ("screen" . shell-script)
+     ("shell" . sh)
+     ("sqlite" . sql)
+     ("jupyter" . python)))
  '(org-track-ordered-property-with-tag t)
  '(package-selected-packages
-   '(quelpa-use-package unicode-fonts org-fancy-priorities excorporate rotate blacken smartparens crux projectile company-lsp lsp-ui pyvenv ein org-drill doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy)))
+   '(ox-hugo ox-reveal company-quickhelp darkroom elpy quelpa-use-package unicode-fonts org-fancy-priorities excorporate rotate blacken smartparens crux projectile company-lsp lsp-ui pyvenv ein org-drill doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy))
+ '(python-shell-completion-native-disabled-interpreters '("pypy" "ipython" "python3.9"))
+ '(python-shell-interpreter "/usr/local/opt/python@3.9/bin/python3.9"))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

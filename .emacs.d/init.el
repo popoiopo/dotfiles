@@ -14,6 +14,9 @@
 			 ("melpa" . "https://melpa.org/packages/")
 			 ("org"   . "https://orgmode.org/elpa/")))
 
+(unless package-archive-contents
+  (package-refresh-contents))
+
 ;; Initializes the package infrastructure
 (package-initialize)
 
@@ -21,79 +24,59 @@
   (package-refresh-contents)
   (package-install 'use-package))
 
-(unless (package-installed-p 'spacemacs-theme)
-  (package-refresh-contents)
-  (package-install 'spacemacs-theme))
-
-(org-babel-load-file (expand-file-name "~/.emacs.d/config.org"))
-
-;; Enable Org mode
+;; load org package and our emacs-config.org file
 (require 'org)
-
-;; User-Defined init.el ends here
+(org-babel-load-file (expand-file-name "~/.emacs_test.d/config.org"))
+(org-babel-load-file (expand-file-name "~/.emacs_test.d/config_custom.org"))
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ansi-color-faces-vector
-   [default bold shadow italic underline bold bold-italic bold])
- '(column-number-mode t)
- '(custom-enabled-themes '(spacemacs-dark))
- '(custom-safe-themes
-   '("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" default))
- '(fci-rule-color "#37474f")
- '(hl-sexp-background-color "#1c1f26")
- '(org-agenda-files
-   '("~/Dropbox/orgfiles/gcal.org" "~/Dropbox/orgfiles/index.org" "/Users/chatel/Dropbox/RoamNotes/org-journal/2020-10-04.org"))
+ '(diary-list-entries-hook '(diary-include-other-diary-files diary-sort-entries))
+ '(excorporate-configuration '("bas.chatel@radboudumc.nl" . "webmail.radboudumc.nl"))
+ '(ivy-mode t)
+ '(org-agenda-dim-blocked-tasks nil)
+ '(org-agenda-files nil)
+ '(org-agenda-include-diary t)
  '(org-blank-before-new-entry '((heading) (plain-list-item)))
- '(org-html-postamble
-   '(("en" "<p class=\"postamble\">Hallo dit is een test</p>")))
- '(org-html-postamble-format
-   '(("en" "<p class=\"author\">Author: %a (%e)</p>
-<p class=\"date\">Date wekrkt dit dan?!?!?! aaaah: %d</p>
-<p class=\"creator\">%c</p>
-<p class=\"validation\">%v</p>")))
- '(org-pomodoro-expiry-time 240)
- '(org-pomodoro-finished-sound
-   "c:/Users/chatel/AppData/Roaming/.emacs.d/elpa/org-pomodoro-20190530.1445/resources/nice-work.wav")
- '(org-pomodoro-finished-sound-args "-volume 0.3")
- '(org-pomodoro-long-break-sound
-   "c:/Users/chatel/AppData/Roaming/.emacs.d/elpa/org-pomodoro-20190530.1445/resources/shall-we.wav")
- '(org-pomodoro-overtime-sound
-   "c:/Users/chatel/AppData/Roaming/.emacs.d/elpa/org-pomodoro-20190530.1445/resources/nice-work.wav")
- '(org-pomodoro-short-break-sound
-   "c:/Users/chatel/AppData/Roaming/.emacs.d/elpa/org-pomodoro-20190530.1445/resources/focus.wav")
+ '(org-clock-into-drawer "CLOCKING")
+ '(org-enforce-todo-checkbox-dependencies t)
+ '(org-enforce-todo-dependencies t)
+ '(org-export-backends '(ascii html icalendar latex odt))
+ '(org-habit-show-habits-only-for-today nil)
+ '(org-log-into-drawer t)
+ '(org-log-repeat 'time)
+ '(org-log-reschedule 'time)
+ '(org-modules
+   '(ol-bbdb ol-bibtex ol-docview ol-eww ol-gnus org-habit ol-info ol-irc ol-mhe ol-rmail ol-w3m))
+ '(org-refile-allow-creating-parent-nodes 'confirm)
+ '(org-refile-targets '((org-agenda-files :tag . ":maxlevel . 3")))
+ '(org-refile-use-outline-path 'file)
+ '(org-src-lang-modes
+   '(("C" . c)
+     ("C++" . c++)
+     ("asymptote" . asy)
+     ("bash" . sh)
+     ("beamer" . latex)
+     ("calc" . fundamental)
+     ("cpp" . c++)
+     ("ditaa" . artist)
+     ("dot" . fundamental)
+     ("elisp" . emacs-lisp)
+     ("ocaml" . tuareg)
+     ("screen" . shell-script)
+     ("shell" . sh)
+     ("sqlite" . sql)
+     ("jupyter" . python)))
+ '(org-track-ordered-property-with-tag t)
  '(package-selected-packages
-   '(deft olivetti org-journal org-roam langtool guess-language org-noter-pdftools pdf-tools ox-twbs sphinx-doc anaconda-mode jedi-direx company-jedi auctex-latexmk org-pdfview powershell sound-wav org-pomodoro buffer-move org-noter org-plus-contrib ag dumb-jump eyebrowse all-the-icons-ivy org-gcal undo-tree google-this ob-session-async-R ob-async emmet-mode org-ref ess-smart-underscore ess epc jedi htmlize ox-reveal counsel try yasnippet-snippets pretty-mode expand-region mark-multiple swiper popup-kill-ring symon dmenu diminish spaceline dashboard rainbow-delimiters hungry-delete switch-window rainbow-mode avy smex ido-vertical-mode org-bullets beacon spacemacs-theme which-key use-package material-theme better-defaults))
- '(safe-local-variable-values '((org-confirm-babel-evaluate)))
- '(send-mail-function 'mailclient-send-it)
- '(vc-annotate-background nil)
- '(vc-annotate-color-map
-   '((20 . "#f36c60")
-     (40 . "#ff9800")
-     (60 . "#fff59d")
-     (80 . "#8bc34a")
-     (100 . "#81d4fa")
-     (120 . "#4dd0e1")
-     (140 . "#b39ddb")
-     (160 . "#f36c60")
-     (180 . "#ff9800")
-     (200 . "#fff59d")
-     (220 . "#8bc34a")
-     (240 . "#81d4fa")
-     (260 . "#4dd0e1")
-     (280 . "#b39ddb")
-     (300 . "#f36c60")
-     (320 . "#ff9800")
-     (340 . "#fff59d")
-     (360 . "#8bc34a")))
- '(vc-annotate-very-old-color nil))
+   '(ox-reveal ox-twbs ox-hugo company-quickhelp darkroom elpy quelpa-use-package unicode-fonts org-fancy-priorities excorporate rotate blacken smartparens crux projectile company-lsp lsp-ui pyvenv ein org-drill doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy))
+ '(python-shell-completion-native-disabled-interpreters '("pypy" "ipython" "python3.9"))
+ '(python-shell-interpreter "/usr/local/opt/python@3.9/bin/python3.9"))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 100 :width normal :foundry "outline" :family "Courier New")))))
-(put 'downcase-region 'disabled nil)
-(put 'narrow-to-region 'disabled nil)
+ )

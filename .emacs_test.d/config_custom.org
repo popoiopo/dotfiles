@@ -81,7 +81,7 @@ One of the cornerstones of my knowledge management. This is based on Roam resear
 	  :hook
 	  (after-init . org-roam-mode)
 	  :custom
-	  (org-roam-directory  roamnotes-path)
+	  (org-roam-directory roamnotes-path)
 	  (org-roam-db-location roam-db-path)
 	  :bind (:map org-roam-mode-map
 		  (("C-c n l" . org-roam)                          ;; Show backlinks in an extra buffer on the left
@@ -252,6 +252,7 @@ Org capture makes creating a template from org a little easier. It creates a new
 				 ))
 #+END_SRC
 ** All things blog publishing
+
 *** Some setup
 This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blogging_for_fun_and_profit.html][loomcom]].
 #+BEGIN_SRC emacs-lisp
@@ -368,6 +369,14 @@ This setup has mostly been inspired by [[https://loomcom.com/blog/0110_emacs_blo
 #+BEGIN_SRC emacs-lisp
   (require 'ox-twbs)
 #+END_SRC
+*** HUGO blogging
+#+BEGIN_SRC emacs-lisp
+  (use-package ox-hugo
+    :ensure t            ;Auto-install the package from Melpa (optional)
+    :after ox)
+
+  (setq HUGO_BASE_DIR "~/github/blog/blog/")
+#+END_SRC
 ** Programming
 *** Python
 **** Pyvenv
@@ -412,7 +421,43 @@ Black is an opinionated pyton formatter. Install with pip install black so the c
   (global-set-key (kbd "M-<up>") 'move-line-up)
   (global-set-key (kbd "M-<down>") 'move-line-down)
 #+END_SRC
-** LSP mode
+**** Elpy
+Set python shell interpreter.
+#+BEGIN_SRC emacs-lisp
+  (advice-add 'elpy-shell--insert-and-font-lock
+	      :around (lambda (f string face &optional no-font-lock)
+			(if (not (eq face 'comint-highlight-input))
+			    (funcall f string face no-font-lock)
+			  (funcall f string face t)
+			  (python-shell-font-lock-post-command-hook))))
+
+  (advice-add 'comint-send-input
+	      :around (lambda (f &rest args)
+			(if (eq major-mode 'inferior-python-mode)
+			    (cl-letf ((g (symbol-function 'add-text-properties))
+				      ((symbol-function 'add-text-properties)
+				       (lambda (start end properties &optional object)
+					 (unless (eq (nth 3 properties) 'comint-highlight-input)
+					   (funcall g start end properties object)))))
+			      (apply f args))
+			  (apply f args))))
+  (company-quickhelp-mode)
+  (eval-after-load 'company
+    '(define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin))
+#+END_SRC
+**** Jupyter
+#+BEGIN_SRC emacs-lisp
+  (use-package jupyter
+    :init
+    (setq jupyter-eval-use-overlays t))
+#+END_SRC
+** Elpy
+#+BEGIN_SRC emacs-lisp
+  (use-package elpy
+    :ensure t
+    :init
+    (elpy-enable))
+#+END_SRC
 ** Expand region
 #+BEGIN_SRC emacs-lisp
   ;;expand region

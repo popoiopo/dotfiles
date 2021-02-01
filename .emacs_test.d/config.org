@@ -84,7 +84,10 @@ Company is a text completion framework for Emacs. The name stands for "complete 
   (use-package company
     :ensure t
     :init
-    (add-hook 'after-init-hook 'global-company-mode))
+    (add-hook 'after-init-hook 'global-company-mode)
+    :bind (:map company-active-map
+       ("C-n" . company-select-next-or-abort)
+       ("C-p" . company-select-previous-or-abort)))
 #+END_SRC
 *** Electric pairing
 Automatically pair the following elements on autocorrect. This is enabled in the [[*Standards (minor modes and minor improvements)][Standards (minor modes and minor improvements)]] through electric-pair-mode.
@@ -123,12 +126,34 @@ Makes sure that M-x also generates suggestions. Otherwise you'd have to remember
 *** Yassnippet
 Yassnippet is the templating system that is used. It creates a folder called snippets in which you can make a folder for each major mode you'd want a template for. E.g., python can have a few snippets to prettyfie a matplotlib graph, or org can have a template for exporting to a latex article or an html webpage.
 #+BEGIN_SRC emacs-lisp
-  (use-package yasnippet
-    :ensure t
-    :config (use-package yasnippet-snippets
-              :ensure t)
-    (yas-reload-all))
+  ;; (use-package yasnippet
+  ;;   :ensure t
+  ;;   :config (use-package yasnippet-snippets
+  ;;             :ensure t)
+  ;;   (yas-reload-all))
+  ;; (yas-global-mode 1)
   (yas-global-mode 1)
+  (add-hook 'yas-minor-mode-hook (lambda () (yas-activate-extra-mode 'fundamental-mode)))
+
+  (defun python-args-to-google-docstring (text &optional make-fields)
+    "Return a reST docstring format for the python arguments in yas-text."
+    (let* ((indent (concat "\n" (make-string (current-column) 32)))
+	   (args (python-split-args text))
+       (nr 0)
+	   (formatted-args
+	(mapconcat
+	 (lambda (x)
+	   (concat "   " (nth 0 x)
+	       (if make-fields (format " ${%d:type( }" (cl-incf nr) nr))
+	       (if (nth 1 x) (concat " \(default " (nth 1 x) "\)"))))
+	 args
+	 indent)))
+      (unless (string= formatted-args "")
+	(concat
+	 (mapconcat 'identity
+	    (list "" "Args:" formatted-args)
+	    indent)
+	 "\n"))))
 #+END_SRC
 ** Buffers
 All things buffer related
@@ -340,21 +365,21 @@ All (most) the custom key combinations that I use regularly.
   (define-key z-map (kbd "C-e h") 'rotate:even-horizontal)
 
   ;; UNCOMMENT IF YOU'RE NOT ME :)
-  (define-key z-map (kbd "z") (defun zshrcEdit () (interactive) (find-file zshrc-file)))
-  (define-key z-map (kbd "s") (defun skhdEdit() (interactive) (find-file skhdrc-file)))
-  (define-key z-map (kbd "k") (defun keyboardEdit() (interactive) (find-file qmk-keymap-file)))
-  (define-key z-map (kbd "y") (defun yabaiEdit() (interactive) (find-file yabai-file)))
-  (define-key z-map (kbd "q") (defun qutebrowserEdit() (interactive) (find-file qutebrowser-file)))
+  (define-key z-map (kbd "f z") (defun zshrcEdit () (interactive) (find-file zshrc-file)))
+  (define-key z-map (kbd "f s") (defun skhdEdit() (interactive) (find-file skhdrc-file)))
+  (define-key z-map (kbd "f k") (defun keyboardEdit() (interactive) (find-file qmk-keymap-file)))
+  (define-key z-map (kbd "f y") (defun yabaiEdit() (interactive) (find-file yabai-file)))
+  (define-key z-map (kbd "f q") (defun qutebrowserEdit() (interactive) (find-file qutebrowser-file)))
 
   ;; Bibfile and ref management files
-  (define-key z-map (kbd "b") (defun bibOrgEdit() (interactive) (find-file bib-org-file)))
-  (define-key z-map (kbd "C-b") (defun bibtexEdit() (interactive) (find-file references-bib-file)))
+  (define-key z-map (kbd "f b") (defun bibOrgEdit() (interactive) (find-file bib-org-file)))
+  (define-key z-map (kbd "f C-b") (defun bibtexEdit() (interactive) (find-file references-bib-file)))
 
   ;; GTD files
-  (define-key z-map (kbd "p") (defun work-GTD() (interactive) (find-file personal-gtd-file)))
-  (define-key z-map (kbd "w") (defun personal-GTD() (interactive) (find-file work-gtd-file)))
-  (define-key z-map (kbd "f") (defun phone-GTD() (interactive) (find-file phone-gtd-file)))
-  (define-key z-map (kbd "t") (defun journalling() (interactive) (find-file journal-file)))
+  (define-key z-map (kbd "f p") (defun personal-GTD() (interactive) (find-file personal-gtd-file)))
+  (define-key z-map (kbd "f w") (defun work-GTD() (interactive) (find-file work-gtd-file)))
+  (define-key z-map (kbd "f f") (defun phone-GTD() (interactive) (find-file phone-gtd-file)))
+  (define-key z-map (kbd "f t") (defun journalling() (interactive) (find-file journal-file)))
   (define-key z-map (kbd "o p") 'org-focus-private)
   (define-key z-map (kbd "o f") 'org-focus-phone)
   (define-key z-map (kbd "o w") 'org-focus-work)
@@ -362,7 +387,10 @@ All (most) the custom key combinations that I use regularly.
   (define-key z-map (kbd "o P") 'org-focus-past)
   (define-key z-map (kbd "o A") 'org-focus-all)
 
-  ;; Link to clipboard
+  ;; Darkroom writing moded
+  (define-key z-map (kbd "d s") 'darkroom-tentative-mode)
+  (define-key z-map (kbd "d i") 'darkroom-increase-margins)
+  (define-key z-map (kbd "d d") 'darkroom-decrease-margins)
 
   ;; Emacs config files
   (define-key z-map (kbd "E") 'config-custom-visit)
@@ -486,10 +514,13 @@ Make sure that export (C-e) to odt, will be formatted to a .doc document for wor
 *** Reveal.js
 Provide the option to export (C-e) an org-file to a reveal presentation.
 #+BEGIN_SRC emacs-lisp
-  (use-package ox-reveal
-  :ensure ox-reveal)
+  (load-file "~/.emacs.d/elpa/ox-reveal-20201211.1518/ox-reveal.el")
   (setq org-reveal-mathjax t)
   (use-package htmlize :ensure t)
+#+END_SRC
+*** Twitter bootstrap
+#+BEGIN_SRC emacs-lisp
+  (load-file "~/.emacs.d/elpa/ox-twbs-20200628.1949/ox-twbs.el")
 #+END_SRC
 *** Export to subdirectory
 Exporting brings about a lot of extra files and mess in the folder of your org file. This variable basically deletes all the extra trash that is made in order to provide you with a pdf file. Keep things nice and clean! :D
@@ -499,6 +530,17 @@ Exporting brings about a lot of extra files and mess in the folder of your org f
 *** Beamer
 #+BEGIN_SRC emacs-lisp
   (require 'ox-beamer)
+#+END_SRC
+*** ox-hugo
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load 'ox
+    (require 'ox-hugo)
+    (require 'ox-twbs)
+    (require 'ox-reveal))
+
+  (load-library "ox-twbs")
+  (load-library "ox-reveal")
+  (load-library "ox-hugo")
 #+END_SRC
 ** Gimmicks
 Just some small functions that can be used for (almost) useless things.
@@ -520,6 +562,12 @@ Just some small functions that can be used for (almost) useless things.
                        ((numberp (cadr alpha)) (cadr alpha)))
                  100)
             '(95 . 95) '(100 . 100)))))
+#+END_SRC
+** Darkroom writing mode
+A mode that the buffer switches to whenever there is only a single window in the frame, gives it margins, amps up the fontsize, and makes it more pleasurable to work with.
+#+BEGIN_SRC emacs-lisp
+  (use-package darkroom :ensure t)
+  (darkroom-tentative-mode t)
 #+END_SRC
 ** Navigation
 *** avy
@@ -551,10 +599,12 @@ Some of the adjustments are *stolen* from [[https://explog.in/notes/writingsetup
                           '((heading . nil)
                             (plain-list-item . nil)))   ;; Dont randomly remove newlines below headers
 #+END_SRC
-*** Image size
+*** Images
 Make standard size for org images. Otherwise they can become gigantic!
 #+BEGIN_SRC emacs-lisp
-    (setq org-image-actual-width 600)
+  (setq org-image-actual-width 600)
+  (setq org-startup-with-inline-images t)
+  (setq org-display-remote-inline-images 'download)
 #+END_SRC
 *** [#B] Priorities
 #+BEGIN_SRC emacs-lisp
@@ -566,7 +616,16 @@ Make standard size for org images. Otherwise they can become gigantic!
 #+BEGIN_SRC emacs-lisp
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((emacs-lisp . t) (python . t) (shell . t) (dot . t)))
+   '((emacs-lisp . t) (python . t) (shell . t) (dot . t) (jupyter . t)))
+  (setq org-confirm-babel-evaluate nil)
+  (setq org-src-fontify-natively t)
+  (add-hook 'org-babel-after-execute-hook 'org-redisplay-inline-images)
+  (setq org-babel-default-header-args:jupyter '(
+						       (:async . "yes")
+						       (:session . "py")
+						       (:kernel . "python3")
+						       (:exports . "result")
+						       ))
 #+END_SRC
 *** Org capture
 When initializing an org-capture, it eats up basically your whole layout. This piece of code prevents that and just uses an existing window, albeit somewhat random as to which one is chosen.
@@ -742,7 +801,7 @@ This causes emacs to look a lot better overall. [[https://github.com/hlissner/em
 
   (use-package doom-modeline
     :ensure t
-    :hook (after-init . doom-modeline-mode))
+    :init (doom-modeline-mode 1))
 
   (setq doom-modeline-buffer-file-name-style 'truncate-all)
 #+END_SRC
