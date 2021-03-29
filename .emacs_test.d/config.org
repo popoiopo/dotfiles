@@ -35,7 +35,7 @@ Some standard files for configuring. The only important thing here to edit is *e
 #+BEGIN_SRC emacs-lisp
   ;; General directories
   (setq github-dir "~/github/")
-  (setq dropbox-dir "~/Dropbox/")
+  (setq surfdrive-dir "~/surfdrive/")
   (setq emacs-dir "~/.emacs_test.d/")
 
   ;; Configuration files
@@ -58,7 +58,7 @@ Some standard files for configuring. The only important thing here to edit is *e
   (setq qutebrowser-file "~/.qutebrowser/qutemacs.py")
 
   ;; Roam
-  (setq roamnotes-path (concat dropbox-dir "roam_notes/"))
+  (setq roamnotes-path (concat surfdrive-dir "roam_notes/"))
   (setq roam-db-path "~/org-roam.db")
 
   ;; More specific files
@@ -331,6 +331,100 @@ Small function to easily configure and reload the configuration file.
   (global-set-key (kbd "C-x C-S-s") 'save-and-exit)
   (global-set-key (kbd "C-x C-M-S-s") 'org-save-all-org-buffers)
 #+END_SRC
+*** Mac hyper key
+#+BEGIN_SRC emacs-lisp
+  (setq ns-function-modifier 'hyper)
+#+END_SRC
+*** Better capitalization
+#+BEGIN_SRC emacs-lisp
+
+  (defun bc/capitalize-word-at-point ()
+    (interactive)
+    (let* (($bounds (bc/word-boundary-at-point-or-region))
+	   ($p1 (car $bounds))
+	   ($p2 (cadr $bounds)))
+      (upcase-initials-region $p1 $p2)))
+
+  (defun bc/word-boundary-at-point-or-region (&optional callback)
+    "Return the boundary (beginning and end) of the word at point, or region, if any.
+    Forwards the points to CALLBACK as (CALLBACK p1 p2), if present.
+
+  URL: https://christiantietze.de/posts/2021/03/change-case-of-word-at-point/"
+    (let ((deactivate-mark nil)
+	  $p1 $p2)
+      (if (use-region-p)
+	  (setq $p1 (region-beginning)
+		$p2 (region-end))
+	(save-excursion
+	  (skip-chars-backward "[:alpha:]")
+	  (setq $p1 (point))
+	  (skip-chars-forward "[:alpha:]")
+	  (setq $p2 (point))))
+      (when callback
+	(funcall callback $p1 $p2))
+      (list $p1 $p2)))
+
+  (defun bc/my-kill-thing-at-point (thing)
+    "Kill the `thing-at-point' for the specified kind of THING. Found from     https://stackoverflow.com/questions/33442027/how-to-deleteor-kill-the-current-word-in-emacs"
+    (let ((bounds (bounds-of-thing-at-point thing)))
+      (if bounds
+	  (kill-region (car bounds) (cdr bounds))
+	(error "No %s at point" thing))))
+
+  (defun bc/capitalize-word-at-point ()
+    (interactive)
+    (bc/word-boundary-at-point-or-region #'upcase-initials-region))
+  (defun bc/downcase-word-at-point ()
+    (interactive)
+    (bc/word-boundary-at-point-or-region #'downcase-region))
+  (defun bc/upcase-word-at-point ()
+    (interactive)
+    (bc/word-boundary-at-point-or-region #'upcase-region))
+  (defun bc/my-kill-word-at-point ()
+    "Kill the word at point."
+    (interactive)
+    (bc/my-kill-thing-at-point 'word))
+  (defun bc/capitalize-region (p1 p2)
+    (downcase-region p1 p2)
+    (upcase-initials-region p1 p2))
+  (defun bc/capitalize-fl-word-at-point ()
+    "Capitalizes first letter of word and downcases rest"
+    (interactive)
+    (bc/word-boundary-at-point-or-region #'bc/capitalize-region))
+
+  (global-set-key (kbd "M-C-c") #'bc/capitalize-word-at-point)
+  (global-set-key (kbd "C-S-c") #'bc/capitalize-fl-word-at-point)
+  (global-set-key (kbd "M-u") #'bc/upcase-word-at-point)
+  (global-set-key (kbd "M-l") #'bc/downcase-word-at-point)
+  (global-set-key (kbd "M-C-d") #'bc/my-kill-word-at-point)
+#+END_SRC
+*** Umlaut toggle
+Toggles the meta button so Mac can also use umlauts and such
+#+BEGIN_SRC emacs-lisp
+  (defun bc/umlauts-on()
+    "Enable umlauts with opt keys"
+    (interactive)
+    (setq mac-option-modifier nil)
+    )
+
+  (defun bc/umlauts-off()
+    "Disable umlauts with opt keys"
+    (interactive)
+    (setq mac-option-modifier 'meta)
+    )
+
+  (defun bc/toggle-umlauts()
+    "Toggle Mac meta key for use of umlauts"
+    (interactive)
+      ;; use a property “state”. Value is t or nil
+    (if (get 'bc/toggle-umlauts 'state)
+	(progn
+	  (bc/umlauts-on)
+	  (put 'bc/toggle-umlauts 'state nil))
+      (progn
+	(bc/umlauts-off)
+	(put 'bc/toggle-umlauts 'state t))))
+#+END_SRC
 ** Custom keystrokes
 All (most) the custom key combinations that I use regularly.
 #+BEGIN_SRC emacs-lisp
@@ -392,6 +486,14 @@ All (most) the custom key combinations that I use regularly.
   (define-key z-map (kbd "d i") 'darkroom-increase-margins)
   (define-key z-map (kbd "d d") 'darkroom-decrease-margins)
 
+  ;; Hugo shorts
+  (define-key z-map (kbd "h i") 'easy-hugo-image)
+  (define-key z-map (kbd "h n") 'easy-hugo-newpost)
+  (define-key z-map (kbd "h p") 'easy-hugo-preview)
+  (define-key z-map (kbd "h e") 'easy-hugo)
+  (define-key z-map (kbd "h g") 'easy-hugo-publish-clever)
+  (define-key z-map (kbd "h s") 'easy-hugo-ag)
+
   ;; Emacs config files
   (define-key z-map (kbd "E") 'config-custom-visit)
   (define-key z-map (kbd "r") 'config-reload)
@@ -399,6 +501,9 @@ All (most) the custom key combinations that I use regularly.
 
   ;; Timer
   (define-key z-map (kbd "k") 'show-msg-after-timer)
+
+  ;; Toggle Meta button
+  (define-key z-map (kbd "m") 'bc/toggle-umlauts)
 
   ;; ORG extra keybinding
   ;; Store a reference link to an org mode location
@@ -423,6 +528,9 @@ All (most) the custom key combinations that I use regularly.
   ;; Create cursors on every line in selected area
   (global-set-key (kbd "C-M-.") 'mc/edit-lines)
 
+  ;; Projectile find file
+  (global-set-key (kbd "C-x C-S-f") 'projectile-find-file)
+
   ;; Insert numbers with increased index for exery cursor (useful for lists)
   (global-set-key (kbd "C-;") 'mc/insert-numbers)
 
@@ -440,6 +548,14 @@ All (most) the custom key combinations that I use regularly.
 
   ;; Refile within same file
   (global-set-key (kbd "C-c w") 'org-refile-in-file)
+#+END_SRC
+** Auto-compile
+This package provides two minor modes which automatically recompile Emacs Lisp source files. Together these modes guarantee that Emacs never loads outdated byte code files. Hopefully will fix org roam.
+#+BEGIN_SRC emacs-lisp
+(setq load-prefer-newer t)
+(require 'auto-compile)
+(auto-compile-on-load-mode)
+(auto-compile-on-save-mode)
 #+END_SRC
 ** Diranged
 Package to preview contents of a file in dired (C-x C-b) while scrolling
@@ -508,19 +624,25 @@ Make sure that export (C-e) to odt, will be formatted to a .doc document for wor
 #+END_SRC
 *** Export to Markdown
 #+BEGIN_SRC emacs-lisp
-  (eval-after-load "org"
-    '(require 'ox-md nil t))
+  ;; (eval-after-load "org"
+  ;;   '(require 'ox-md nil t))
+#+END_SRC
+*** Twitter bootstrap
+#+BEGIN_SRC emacs-lisp
+  ;; (load-file "~/.emacs.d/elpa/ox-twbs-20200628.1949/ox-twbs.el")
+  (use-package ox-twbs
+      :defer t
+      :after org)
 #+END_SRC
 *** Reveal.js
 Provide the option to export (C-e) an org-file to a reveal presentation.
 #+BEGIN_SRC emacs-lisp
-  (load-file "~/.emacs.d/elpa/ox-reveal-20201211.1518/ox-reveal.el")
+  ;; (load-file "~/.emacs.d/elpa/ox-reveal-20201211.1518/ox-reveal.el")
   (setq org-reveal-mathjax t)
   (use-package htmlize :ensure t)
-#+END_SRC
-*** Twitter bootstrap
-#+BEGIN_SRC emacs-lisp
-  (load-file "~/.emacs.d/elpa/ox-twbs-20200628.1949/ox-twbs.el")
+  (use-package ox-reveal
+      :defer 3
+      :after org)
 #+END_SRC
 *** Export to subdirectory
 Exporting brings about a lot of extra files and mess in the folder of your org file. This variable basically deletes all the extra trash that is made in order to provide you with a pdf file. Keep things nice and clean! :D
@@ -531,16 +653,21 @@ Exporting brings about a lot of extra files and mess in the folder of your org f
 #+BEGIN_SRC emacs-lisp
   (require 'ox-beamer)
 #+END_SRC
-*** ox-hugo
+*** easy-hugo
 #+BEGIN_SRC emacs-lisp
-  (with-eval-after-load 'ox
-    (require 'ox-hugo)
-    (require 'ox-twbs)
-    (require 'ox-reveal))
+  (use-package easy-hugo
+  :init
+  (setq easy-hugo-basedir "~/github/blog/")
+  (setq easy-hugo-url "https://popoiopo.github.io")
+  (setq easy-hugo-previewtime "300")
+  (setq easy-hugo-default-ext ".org")
+  :bind ("C-c C-e" . easy-hugo))
 
-  (load-library "ox-twbs")
-  (load-library "ox-reveal")
-  (load-library "ox-hugo")
+  (defface easy-hugo-help-face
+  '((((class color) (background light)) (:bold t :foreground "#FF12FF" :background "#FB4328"))
+  (((class color) (background dark)) (:bold t :foreground "#00F2CC" :background "#ABCDEF")))
+  ""
+  :group 'easy-hugo-faces)
 #+END_SRC
 ** Gimmicks
 Just some small functions that can be used for (almost) useless things.
@@ -637,6 +764,15 @@ When initializing an org-capture, it eats up basically your whole layout. This p
   (with-eval-after-load "org-capture"
     (advice-add 'org-capture-place-template :around 'my-org-capture-place-template-dont-delete-windows))
 #+END_SRC
+*** Org noter
+#+BEGIN_SRC emacs-lisp
+(use-package org-noter
+  :after (:any org pdf-view)
+  :config
+  (setq
+   )
+  )
+#+END_SRC
 ** Standards (minor modes and minor improvements)
 *** Alter annoying defaults
 Small defaults to be changed as minor improvements. The changes are summarized next to it.
@@ -695,18 +831,20 @@ Provides options for keystrokes. Super useful!
 #+BEGIN_SRC emacs-lisp
   (setq org-todo-keyword-faces
 	'(
+	  ("DOING" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
 	  ("NEXT" . (:foreground "#05d3fc" :weight bold :box (:line-width 2 :style released-button)))
 	  ("MEETING" . (:foreground "#b28e00" :weight bold :box (:line-width 2 :style released-button)))
 	  ("DELEGATED" . (:foreground "#b28e00" :weight bold :box (:line-width 2 :style released-button)))
 	  ("WAITING" . (:foreground "#fcca05" :weight bold :box (:line-width 2 :style released-button)))
 	  ("FLEETING" . (:foreground "#f62af9" :weight bold :box (:line-width 2 :style released-button)))
 	  ("PROJ" . (:foreground "#a768f9" :weight bold :box (:line-width 2 :style released-button)))
+	  ("TEACHING" . (:foreground "#a768f9" :weight bold :box (:line-width 2 :style released-button)))
 	  ("LONGTERM" . (:foreground "#c4013c" :weight bold :box (:line-width 2 :style released-button)))
 	  ("CANCELED" . (:foreground "#fc4205" :weight bold :box (:line-width 2 :style released-button)))
 	  ))
 
   (setq org-todo-keywords
-	'((sequence "TODO(t/!)" "NEXT(n/!)" "DELEGATED(o)" "WAITING(w@/!)" "FLEETING(f)" "PROJ(p)" "MEETING(m)" "LONGTERM(l@/!)" "REPEAT(r)" "|" "CANCELED(c@/!)" "DONE(d/!)")))
+	'((sequence "TODO(t/!)" "DOING(D/!)" "NEXT(n/!)" "DELEGATED(o)" "WAITING(w@/!)" "FLEETING(f)" "TEACHING(T)" "PROJ(p)" "MEETING(m)" "LONGTERM(l@/!)" "REPEAT(r)" "|" "CANCELED(c@/!)" "DONE(d/!)")))
 
   (setq org-log-repeat nil)
   (setq org-todo-repeat-to-state "REPEAT")
@@ -834,7 +972,7 @@ This causes emacs to look a lot better overall. [[https://github.com/hlissner/em
     (when (member org-state org-done-keywords)
       (org-reset-checkbox-state-maybe)))
   (defun my-clockfiles () (append org-agenda-files
-				  (file-expand-wildcards "~/Dropbox/org/track∗.org")))
+				  (file-expand-wildcards "~/surfdrive/org/track∗.org")))
   (add-hook 'org-after-todo-state-change-hook 'org-checklist)
 #+END_SRC
 * Shortcuts and how-to's
@@ -1090,9 +1228,9 @@ _How to modify a config file or custom config file step by step:_
 2. Modify whatever you want
 3. C-x Cs to save file
 4. C-z r to reload the config file
-_How to create a new folder saved in dropbox_
+_How to create a new folder saved in surfdrive_
 1. C-x C-f to create a new file
 2. ~/ to go to home directory
-3. ~/Dropbox to go to dropbox
+3. ~/surfdrive to go to surfdrive
 4. /file_name
 5. M-x RET RET to create a new directory (new folder) /or/ C-x C-s to create new file

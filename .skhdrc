@@ -85,3 +85,6 @@ default < cmd + ctrl - 4 : open -na gimp
 
 default < cmd + ctrl - 0 : open -na All-in-one\ messenger; yabai -m window --space  1; yabai -m space --focus 1
 default < cmd + ctrl - 9 : open -na spotify; yabai -m window --space  2; yabai -m space --focus 2
+
+# ######## Emacs ##########
+cmd + shift + ctrl - s : emacsclient -n -e '(yequake-toggle "org-capture")'

@@ -1,3 +1,7 @@
+# -*- mode: snippet -*-
+# name: orgPres
+# key: orgPres
+# --
 #+OPTIONS: reveal_title_slide:"<h3>%t</h3><h4>%s</h4><div><small>%d</small><br><small><small>%a&nbsp;:&nbsp;%e</small></small></div>"
 #+OPTIONS: reveal_math:t
 
@@ -19,8 +23,8 @@
 #+REVEAL_EXTRA_CSS: local.css
 # #+REVEAL_HLEVEL: 1
 
-#+Title: Dissipation of Social Capacity in Social Networks
-#+Subtitle: Reducing Loneliness by Social Gamification
+#+Title: $3
+#+Subtitle: $4
 
 # default, cube, page, concave, zoom, linear, fade, none
 #+REVEAL_TRANS: concave
@@ -29,7 +33,7 @@
 
 #+Author: Bas Chatel
 #+Email: bastiaan.chatel@gmail.com
-#+DATE: 01-04-20
+#+DATE: $U
 
 # Templating
 #
@@ -49,7 +53,7 @@
 # #+END_NOTES
 #
 # ### CHANGE BACKGROUND ###
-# 
+#
 # :PROPERTIES:
 # :reveal_background: #123456
 # :END:
@@ -57,7 +61,7 @@
 # ### 2-COLUMN SLIDE ###
 #
 # #+REVEAL_HTML: <div style="width:50%;float:left">
-# #+REVEAL_HTML: 
+# #+REVEAL_HTML:
 # #+REVEAL_HTML: <img src="images/corp.jpg" style="width: 100%">
 # #+REVEAL_HTML: </div>
 # #+REVEAL_HTML: <div style="width:50%;float: left">
@@ -94,12 +98,12 @@
 # First element
 #
 # class="fragment" data-fragment-index="0"
-# 
+#
 # THEN
 #
-# class="fragment" 
+# class="fragment"
 #
-# OF ALS JE ALLES IN ORG DOEN CSS PART IN EXTERNE FILE EN VOLGENDE BOVEN LIST 
+# OF ALS JE ALLES IN ORG DOEN CSS PART IN EXTERNE FILE EN VOLGENDE BOVEN LIST
 # ITEMS ZETTEN
 #
 # #+ATTR_REVEAL: :frag (t fade-in fade-in)

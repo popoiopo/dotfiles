@@ -9,8 +9,7 @@
 
 ;; Adds the Melpa archive to the list of available repositories
 ;;; remove SC if you are not using sunrise commander and org if you like outdated packages
-(setq package-archives '(("ELPA"  . "http://tromey.com/elpa/")
-			 ("gnu"   . "http://elpa.gnu.org/packages/")
+(setq package-archives '(("gnu"   . "http://elpa.gnu.org/packages/")
 			 ("melpa" . "https://melpa.org/packages/")
 			 ("org"   . "https://orgmode.org/elpa/")))
 
@@ -25,7 +24,8 @@
   (package-install 'use-package))
 
 ;; load org package and our emacs-config.org file
-(require 'org)
+(use-package org
+  :ensure t)
 (org-babel-load-file (expand-file-name "~/.emacs_test.d/config.org"))
 (org-babel-load-file (expand-file-name "~/.emacs_test.d/config_custom.org"))
 (custom-set-variables
@@ -71,9 +71,25 @@
      ("jupyter" . python)))
  '(org-track-ordered-property-with-tag t)
  '(package-selected-packages
-   '(ox-hugo ox-reveal company-quickhelp darkroom elpy quelpa-use-package unicode-fonts org-fancy-priorities excorporate rotate blacken smartparens crux projectile company-lsp lsp-ui pyvenv ein org-drill doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy))
+   '(auto-compile yequake helm-ag counsel-ag-popup popup-imenu easy-hugo ox-hugo ox-reveal company-quickhelp darkroom elpy quelpa-use-package unicode-fonts org-fancy-priorities excorporate rotate blacken smartparens crux projectile company-lsp lsp-ui pyvenv ein org-drill doom-modeline amx all-the-icons doom-themes eglot yasnippet-snippets which-key web-mode use-package try symon switch-window spacemacs-theme spaceline smex rainbow-mode rainbow-delimiters popup-kill-ring org-roam-server org-roam-bibtex org-ref org-ql org-pomodoro org-noter org-journal org-gcal org-bullets ob-async multiple-cursors mark-multiple magit ido-vertical-mode hungry-delete google-this expand-region emmet-mode dumb-jump dmenu diminish dashboard counsel company-org-roam buffer-move beacon avy))
  '(python-shell-completion-native-disabled-interpreters '("pypy" "ipython" "python3.9"))
- '(python-shell-interpreter "/usr/local/opt/python@3.9/bin/python3.9"))
+ '(python-shell-interpreter "/usr/local/opt/python@3.9/bin/python3.9")
+ '(yequake-frames
+   '(("work"
+      (width . 0.75)
+      (height . 0.5)
+      (buffer-fns "~/surfdrive/roam_notes/gtd/work.org" split-window-horizontally "*scratch*")
+      (frame-parameters
+       (undecorated . t)))
+     ("org-capture"
+      (buffer-fns yequake-org-capture)
+      (width . 0.75)
+      (height . 0.5)
+      (alpha . 0.95)
+      (frame-parameters
+       (undecorated . t)
+       (skip-taskbar . t)
+       (sticky . t)))) t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

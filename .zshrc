@@ -80,6 +80,7 @@ plugins=(
 	zsh-syntax-highlighting
 	zsh-autosuggestions
 	fzf
+	poetry
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -142,3 +143,5 @@ function lazygit() {
     git commit -a -m "$1"
     git push
 }
+
+export PATH="$HOME/.poetry/bin:$PATH"
